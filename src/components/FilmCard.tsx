@@ -1,16 +1,20 @@
-import { Star, Wallet } from "lucide-react";
+import { useState } from "react";
+import { Star, Wallet, Play } from "lucide-react";
 import { Button } from "./ui/button";
 import { Card, CardContent } from "./ui/card";
+import { PurchaseDialog } from "./PurchaseDialog";
 
 interface FilmCardProps {
+  id: number;
   title: string;
   image: string;
   views: number;
   rating: number;
-  onBuyDirect: () => void;
+  price: string;
 }
 
-export const FilmCard = ({ title, image, views, rating, onBuyDirect }: FilmCardProps) => {
+export const FilmCard = ({ id, title, image, views, rating, price }: FilmCardProps) => {
+  const [showPurchaseDialog, setShowPurchaseDialog] = useState(false);
   return (
     <Card className="group overflow-hidden border-border bg-card transition-all hover:shadow-neon">
       <div className="relative aspect-video overflow-hidden">
@@ -37,20 +41,28 @@ export const FilmCard = ({ title, image, views, rating, onBuyDirect }: FilmCardP
 
         <div className="flex gap-2">
           <Button 
-            className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90"
-            onClick={onBuyDirect}
+            variant="outline"
+            className="flex-1"
           >
-            <Wallet className="mr-2 h-4 w-4" />
-            Buy Direct
+            <Play className="mr-2 h-4 w-4" />
+            Trailer
           </Button>
           <Button 
-            variant="outline" 
-            className="flex-1 border-border text-foreground hover:bg-secondary"
-            onClick={onBuyDirect}
+            className="flex-1"
+            onClick={() => setShowPurchaseDialog(true)}
           >
-            Buy Direct
+            <Wallet className="mr-2 h-4 w-4" />
+            Buy Now
           </Button>
         </div>
+        
+        <PurchaseDialog
+          open={showPurchaseDialog}
+          onOpenChange={setShowPurchaseDialog}
+          filmId={id}
+          filmTitle={title}
+          price={price}
+        />
       </CardContent>
     </Card>
   );
