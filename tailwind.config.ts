@@ -57,6 +57,15 @@ export default {
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
         },
+        neon: "hsl(var(--neon-glow))",
+      },
+      backgroundImage: {
+        "gradient-primary": "var(--gradient-primary)",
+        "gradient-hero": "var(--gradient-hero)",
+      },
+      boxShadow: {
+        neon: "0 0 20px hsl(var(--neon-glow) / 0.5)",
+        "neon-lg": "0 0 40px hsl(var(--neon-glow) / 0.6)",
       },
       borderRadius: {
         lg: "var(--radius)",
