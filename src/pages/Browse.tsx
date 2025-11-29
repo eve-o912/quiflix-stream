@@ -9,28 +9,27 @@ const Browse = () => {
       id: 1,
       title: "Neon Dreams",
       image: "https://images.unsplash.com/photo-1518676590629-3dcbd9c5a5c9?w=800&h=450&fit=crop",
-      views: 0,
-      rating: 0,
+      views: 125000,
+      rating: 4.8,
+      price: "5.99",
     },
     {
       id: 2,
       title: "Ocean's Edge",
       image: "https://images.unsplash.com/photo-1505142468610-359e7d316be0?w=800&h=450&fit=crop",
-      views: 0,
-      rating: 0,
+      views: 98000,
+      rating: 4.6,
+      price: "4.99",
     },
     {
       id: 3,
       title: "Mind Palace",
       image: "https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=800&h=450&fit=crop",
-      views: 0,
-      rating: 0,
+      views: 156000,
+      rating: 4.9,
+      price: "6.99",
     },
   ];
-
-  const handleBuyDirect = () => {
-    toast.info("Connect wallet to purchase film NFT");
-  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -43,16 +42,17 @@ const Browse = () => {
             <h1 className="mb-8 text-4xl font-bold text-foreground">Browse Films</h1>
             
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              {films.map((film) => (
-                <FilmCard
-                  key={film.id}
-                  title={film.title}
-                  image={film.image}
-                  views={film.views}
-                  rating={film.rating}
-                  onBuyDirect={handleBuyDirect}
-                />
-              ))}
+            {films.map((film) => (
+              <FilmCard
+                key={film.id}
+                id={film.id}
+                title={film.title}
+                image={film.image}
+                views={film.views}
+                rating={film.rating}
+                price={film.price}
+              />
+            ))}
             </div>
           </div>
         </div>
