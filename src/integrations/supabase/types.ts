@@ -14,7 +14,57 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      custodial_wallets: {
+        Row: {
+          created_at: string | null
+          encrypted_private_key: string
+          id: string
+          network: string
+          user_id: string
+          wallet_address: string
+        }
+        Insert: {
+          created_at?: string | null
+          encrypted_private_key: string
+          id?: string
+          network?: string
+          user_id: string
+          wallet_address: string
+        }
+        Update: {
+          created_at?: string | null
+          encrypted_private_key?: string
+          id?: string
+          network?: string
+          user_id?: string
+          wallet_address?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string | null
+          email: string
+          full_name: string | null
+          id: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          email: string
+          full_name?: string | null
+          id: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          email?: string
+          full_name?: string | null
+          id?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
