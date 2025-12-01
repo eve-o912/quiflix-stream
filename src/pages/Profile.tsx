@@ -56,6 +56,25 @@ const Profile = () => {
     enabled: !!userId,
   });
 
+  const { data: balance, isLoading: balanceLoading } = useQuery({
+    queryKey: ['balance', wallet?.wallet_address],
+    queryFn: async () => {
+      if (!wallet?.wallet_address) return null;
+      const { data, error } = await supabase.functions.invoke('get-wallet-balance', {
+        body: { walletAddress: wallet.wallet_address },
+      });
+      if (error) throw error;
+      return data as {
+        usdc: string;
+        usdt: string;
+        kes: string;
+        exchangeRate: string;
+      };
+    },
+    enabled: !!wallet?.wallet_address,
+    refetchInterval: 30000, // Refetch every 30 seconds
+  });
+
   const copyAddress = () => {
     if (wallet?.wallet_address) {
       navigator.clipboard.writeText(wallet.wallet_address);
@@ -67,7 +86,7 @@ const Profile = () => {
     return `${address.slice(0, 6)}...${address.slice(-4)}`;
   };
 
-  if (profileLoading || walletLoading || !userId) {
+  if (profileLoading || walletLoading || balanceLoading || !userId) {
     return (
       <div className="min-h-screen bg-background">
         <Sidebar />
@@ -190,9 +209,32 @@ const Profile = () => {
 
                       <div>
                         <p className="mb-2 text-sm text-muted-foreground">Balance</p>
-                        <div className="rounded-lg bg-secondary p-3">
-                          <p className="text-lg font-semibold text-foreground">0.0000 ETH</p>
-                          <p className="text-xs text-muted-foreground">Connect to view balance</p>
+                        <div className="space-y-2">
+                          <div className="rounded-lg bg-secondary p-3">
+                            <div className="flex items-center justify-between mb-1">
+                              <span className="text-xs text-muted-foreground">KES</span>
+                              <span className="text-lg font-semibold text-primary">
+                                {balance ? `KES ${balance.kes}` : 'Loading...'}
+                              </span>
+                            </div>
+                          </div>
+                          <div className="grid grid-cols-2 gap-2">
+                            <div className="rounded-lg bg-secondary/70 p-2">
+                              <p className="text-xs text-muted-foreground mb-1">USDC</p>
+                              <p className="text-sm font-semibold text-foreground">
+                                {balance ? balance.usdc : '0.00'}
+                              </p>
+                            </div>
+                            <div className="rounded-lg bg-secondary/70 p-2">
+                              <p className="text-xs text-muted-foreground mb-1">USDT</p>
+                              <p className="text-sm font-semibold text-foreground">
+                                {balance ? balance.usdt : '0.00'}
+                              </p>
+                            </div>
+                          </div>
+                          <p className="text-xs text-muted-foreground text-center">
+                            Updates every 30 seconds
+                          </p>
                         </div>
                       </div>
                     </div>
