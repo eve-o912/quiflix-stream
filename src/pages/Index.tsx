@@ -30,7 +30,7 @@ const Index = () => {
         <div className="relative z-10 flex flex-col items-center justify-center h-full text-center px-4 space-y-8">
           <div className="space-y-4 animate-fade-in">
             <Film className="w-20 h-20 mx-auto text-primary" />
-            <h1 className="text-6xl md:text-8xl font-bold text-white tracking-tight">
+            <h1 className="text-6xl md:text-8xl font-bold bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent tracking-tight">
               QuiFlix
             </h1>
             <p className="text-xl md:text-2xl text-gray-300 max-w-2xl">
