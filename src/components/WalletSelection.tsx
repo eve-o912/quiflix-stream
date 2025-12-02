@@ -5,7 +5,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Button } from './ui/button';
 import { RadioGroup, RadioGroupItem } from './ui/radio-group';
 import { Label } from './ui/label';
-import { Wallet, Shield, Chrome, Loader2 } from 'lucide-react';
+import { Wallet, Shield, Chrome, Loader2, CreditCard, ExternalLink } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 
 interface WalletSelectionProps {
@@ -15,7 +15,7 @@ interface WalletSelectionProps {
 }
 
 export function WalletSelection({ open, onOpenChange, onWalletConnected }: WalletSelectionProps) {
-  const [walletType, setWalletType] = useState<'custodial' | 'metamask' | 'coinbase'>('custodial');
+  const [walletType, setWalletType] = useState<'custodial' | 'metamask' | 'coinbase' | 'onramp'>('custodial');
   const [loading, setLoading] = useState(false);
   const { address, isConnected } = useAccount();
   const { connect, connectors } = useConnect();
@@ -100,9 +100,21 @@ export function WalletSelection({ open, onOpenChange, onWalletConnected }: Walle
     }
   };
 
+  const handleOnramp = () => {
+    // Open MoonPay/Transak onramp in new tab (using MoonPay as example)
+    const onrampUrl = 'https://www.moonpay.com/buy/usdc';
+    window.open(onrampUrl, '_blank');
+    toast({
+      title: 'Fiat Onramp Opened',
+      description: 'Complete your purchase in the new tab, then connect your wallet.',
+    });
+  };
+
   const handleConnect = () => {
     if (walletType === 'custodial') {
       handleCustodialWallet();
+    } else if (walletType === 'onramp') {
+      handleOnramp();
     } else {
       handleExternalWallet();
     }
@@ -161,6 +173,19 @@ export function WalletSelection({ open, onOpenChange, onWalletConnected }: Walle
                 </div>
               </Label>
             </div>
+
+            <div className="flex items-center space-x-2 p-4 rounded-lg border border-primary/50 bg-primary/5 hover:bg-primary/10 cursor-pointer">
+              <RadioGroupItem value="onramp" id="onramp" />
+              <Label htmlFor="onramp" className="flex-1 cursor-pointer">
+                <div className="flex items-center gap-3">
+                  <CreditCard className="h-5 w-5 text-primary" />
+                  <div>
+                    <p className="font-semibold text-foreground">Buy USDC with Card/M-Pesa</p>
+                    <p className="text-sm text-muted-foreground">Convert local currency to USDC</p>
+                  </div>
+                </div>
+              </Label>
+            </div>
           </RadioGroup>
 
           <Button
@@ -174,6 +199,11 @@ export function WalletSelection({ open, onOpenChange, onWalletConnected }: Walle
                 <Loader2 className="mr-2 h-5 w-5 animate-spin" />
                 Connecting...
               </>
+            ) : walletType === 'onramp' ? (
+              <>
+                <ExternalLink className="mr-2 h-5 w-5" />
+                Buy USDC
+              </>
             ) : (
               <>
                 <Wallet className="mr-2 h-5 w-5" />
@@ -181,6 +211,12 @@ export function WalletSelection({ open, onOpenChange, onWalletConnected }: Walle
               </>
             )}
           </Button>
+
+          {walletType === 'onramp' && (
+            <p className="text-xs text-center text-muted-foreground">
+              Supports credit/debit cards, bank transfer, and M-Pesa
+            </p>
+          )}
         </div>
       </DialogContent>
     </Dialog>

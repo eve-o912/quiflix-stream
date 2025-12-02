@@ -11,6 +11,9 @@ import Rewards from "./pages/Rewards";
 import Submit from "./pages/Submit";
 import Profile from "./pages/Profile";
 import Auth from "./pages/Auth";
+import Terms from "./pages/Terms";
+import Privacy from "./pages/Privacy";
+import Help from "./pages/Help";
 import NotFound from "./pages/NotFound";
 
 const App = () => (
@@ -28,6 +31,11 @@ const App = () => (
           <Route path="/rewards" element={<Rewards />} />
           <Route path="/submit" element={<Submit />} />
           <Route path="/profile" element={<Profile />} />
+          <Route path="/terms" element={<Terms />} />
+          <Route path="/privacy" element={<Privacy />} />
+          <Route path="/help" element={<Help />} />
+          <Route path="/refund" element={<Terms />} />
+          <Route path="/contact" element={<Help />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

@@ -1,6 +1,7 @@
 import { Header } from "@/components/Header";
 import { Sidebar } from "@/components/Sidebar";
 import { FilmCard } from "@/components/FilmCard";
+import { Footer } from "@/components/Footer";
 import { Play, TrendingUp, Clock, Star } from "lucide-react";
 
 const Browse = () => {
@@ -158,6 +159,9 @@ const Browse = () => {
             </div>
           </div>
         </section>
+
+        {/* Footer */}
+        <Footer />
       </main>
     </div>
   );
