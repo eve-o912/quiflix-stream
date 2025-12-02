@@ -3,6 +3,7 @@ import { Star, Wallet, Play } from "lucide-react";
 import { Button } from "./ui/button";
 import { Card, CardContent } from "./ui/card";
 import { PurchaseDialog } from "./PurchaseDialog";
+import { TrailerModal } from "./TrailerModal";
 
 interface FilmCardProps {
   id: number;
@@ -11,10 +12,13 @@ interface FilmCardProps {
   views: number;
   rating: number;
   price: string;
+  trailerUrl?: string;
 }
 
-export const FilmCard = ({ id, title, image, views, rating, price }: FilmCardProps) => {
+export const FilmCard = ({ id, title, image, views, rating, price, trailerUrl }: FilmCardProps) => {
   const [showPurchaseDialog, setShowPurchaseDialog] = useState(false);
+  const [showTrailer, setShowTrailer] = useState(false);
+  
   return (
     <Card className="group overflow-hidden border-border bg-card transition-all hover:shadow-neon">
       <div className="relative aspect-video overflow-hidden">
@@ -43,6 +47,7 @@ export const FilmCard = ({ id, title, image, views, rating, price }: FilmCardPro
           <Button 
             variant="outline"
             className="flex-1"
+            onClick={() => setShowTrailer(true)}
           >
             <Play className="mr-2 h-4 w-4" />
             Trailer
@@ -55,6 +60,13 @@ export const FilmCard = ({ id, title, image, views, rating, price }: FilmCardPro
             Buy Now
           </Button>
         </div>
+        
+        <TrailerModal
+          open={showTrailer}
+          onOpenChange={setShowTrailer}
+          filmTitle={title}
+          trailerUrl={trailerUrl}
+        />
         
         <PurchaseDialog
           open={showPurchaseDialog}

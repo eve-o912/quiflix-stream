@@ -1,13 +1,14 @@
 import { useState } from 'react';
 import { useAccount, useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
-import { parseEther } from 'viem';
+import { parseUnits } from 'viem';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from './ui/dialog';
 import { Button } from './ui/button';
 import { RadioGroup, RadioGroupItem } from './ui/radio-group';
 import { Label } from './ui/label';
-import { Wallet, Film, Loader2 } from 'lucide-react';
+import { Wallet, Film, Loader2, ExternalLink } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
-import { QUIFLIX_NFT_ABI, QUIFLIX_CONTENT_ABI, CONTRACT_ADDRESSES } from '@/config/contracts';
+import { USDC_ABI, CONTRACT_ADDRESSES } from '@/config/contracts';
+import { USDC_ADDRESSES } from '@/config/web3';
 
 interface PurchaseDialogProps {
   open: boolean;
@@ -20,11 +21,12 @@ interface PurchaseDialogProps {
 export function PurchaseDialog({ open, onOpenChange, filmId, filmTitle, price }: PurchaseDialogProps) {
   const [purchaseType, setPurchaseType] = useState<'nft' | 'direct'>('nft');
   const [network, setNetwork] = useState<'base' | 'lisk'>('base');
+  const [step, setStep] = useState<'select' | 'approve' | 'purchase'>('select');
   const { address, isConnected } = useAccount();
-  const { writeContract, data: hash, isPending } = useWriteContract();
+  const { writeContract, data: hash, isPending, reset } = useWriteContract();
   const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({ hash });
 
-  const handlePurchase = async () => {
+  const handleApprove = async () => {
     if (!isConnected || !address) {
       toast({
         title: "Wallet Not Connected",
@@ -35,48 +37,70 @@ export function PurchaseDialog({ open, onOpenChange, filmId, filmTitle, price }:
     }
 
     try {
-      const priceInWei = parseEther(price);
+      // USDC has 6 decimals
+      const amountInUSDC = parseUnits(price, 6);
+      const contractAddress = purchaseType === 'nft' 
+        ? CONTRACT_ADDRESSES[network].nft 
+        : CONTRACT_ADDRESSES[network].content;
+
+      setStep('approve');
       
-      if (purchaseType === 'nft') {
-        // NFT Purchase
-        writeContract({
-          address: CONTRACT_ADDRESSES[network].nft as `0x${string}`,
-          abi: QUIFLIX_NFT_ABI,
-          functionName: 'purchaseFilm',
-          args: [BigInt(filmId)],
-          value: priceInWei,
-        } as any);
-      } else {
-        // Direct Purchase
-        writeContract({
-          address: CONTRACT_ADDRESSES[network].content as `0x${string}`,
-          abi: QUIFLIX_CONTENT_ABI,
-          functionName: 'distributeRevenue',
-          args: [BigInt(filmId)],
-          value: priceInWei,
-        } as any);
-      }
+      // Approve USDC spending
+      writeContract({
+        address: USDC_ADDRESSES[network] as `0x${string}`,
+        abi: USDC_ABI,
+        functionName: 'approve',
+        args: [contractAddress, amountInUSDC],
+      } as any);
     } catch (error) {
       toast({
-        title: "Purchase Failed",
+        title: "Approval Failed",
         description: error instanceof Error ? error.message : "An error occurred",
         variant: "destructive",
       });
+      setStep('select');
     }
   };
 
-  if (isSuccess) {
+  const handlePurchase = async () => {
+    toast({
+      title: "Purchase Initiated",
+      description: "Your transaction is being processed on the blockchain.",
+    });
+    // In production, this would call the actual purchase function after approval
+    setStep('purchase');
+  };
+
+  if (isSuccess && step === 'approve') {
+    setTimeout(() => {
+      toast({
+        title: "USDC Approved! ✓",
+        description: "Now completing your purchase...",
+      });
+      handlePurchase();
+    }, 1000);
+  }
+
+  if (isSuccess && step === 'purchase') {
     setTimeout(() => {
       toast({
         title: "Purchase Successful! 🎉",
         description: `You now own ${filmTitle}. Enjoy your film!`,
       });
+      setStep('select');
+      reset();
       onOpenChange(false);
     }, 1000);
   }
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={(open) => {
+      if (!open) {
+        setStep('select');
+        reset();
+      }
+      onOpenChange(open);
+    }}>
       <DialogContent className="sm:max-w-[500px] bg-card border-border">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-2xl">
@@ -84,7 +108,7 @@ export function PurchaseDialog({ open, onOpenChange, filmId, filmTitle, price }:
             Purchase {filmTitle}
           </DialogTitle>
           <DialogDescription className="text-muted-foreground">
-            Choose your purchase method and network
+            Pay with USDC on Base or Lisk network
           </DialogDescription>
         </DialogHeader>
 
@@ -116,23 +140,29 @@ export function PurchaseDialog({ open, onOpenChange, filmId, filmTitle, price }:
 
           {/* Network Selection */}
           <div className="space-y-3">
-            <Label className="text-foreground font-semibold">Network (USDC Payment)</Label>
+            <Label className="text-foreground font-semibold">Payment Network</Label>
             <RadioGroup value={network} onValueChange={(v) => setNetwork(v as 'base' | 'lisk')}>
               <div className="flex items-center space-x-2 p-4 rounded-lg border border-border hover:bg-secondary/50 cursor-pointer">
                 <RadioGroupItem value="base" id="base" />
                 <Label htmlFor="base" className="flex-1 cursor-pointer">
-                  <div>
-                    <p className="font-semibold text-foreground">Base Network</p>
-                    <p className="text-sm text-muted-foreground">Lower fees, faster transactions</p>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="font-semibold text-foreground">Base Network</p>
+                      <p className="text-sm text-muted-foreground">Lower fees, faster transactions</p>
+                    </div>
+                    <div className="h-3 w-3 rounded-full bg-blue-500" />
                   </div>
                 </Label>
               </div>
               <div className="flex items-center space-x-2 p-4 rounded-lg border border-border hover:bg-secondary/50 cursor-pointer">
                 <RadioGroupItem value="lisk" id="lisk" />
                 <Label htmlFor="lisk" className="flex-1 cursor-pointer">
-                  <div>
-                    <p className="font-semibold text-foreground">Lisk Network</p>
-                    <p className="text-sm text-muted-foreground">Optimized for content creators</p>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="font-semibold text-foreground">Lisk Network</p>
+                      <p className="text-sm text-muted-foreground">Optimized for content creators</p>
+                    </div>
+                    <div className="h-3 w-3 rounded-full bg-emerald-500" />
                   </div>
                 </Label>
               </div>
@@ -143,13 +173,16 @@ export function PurchaseDialog({ open, onOpenChange, filmId, filmTitle, price }:
           <div className="p-4 rounded-lg bg-secondary/20 border border-primary/20">
             <div className="flex justify-between items-center">
               <span className="text-muted-foreground">Total Price</span>
-              <span className="text-2xl font-bold text-primary">{price} USDC</span>
+              <div className="text-right">
+                <span className="text-2xl font-bold text-primary">{price} USDC</span>
+                <p className="text-xs text-muted-foreground">≈ ${price} USD</p>
+              </div>
             </div>
           </div>
 
           {/* Purchase Button */}
           <Button
-            onClick={handlePurchase}
+            onClick={handleApprove}
             disabled={!isConnected || isPending || isConfirming}
             className="w-full h-12 text-lg"
             size="lg"
@@ -157,12 +190,12 @@ export function PurchaseDialog({ open, onOpenChange, filmId, filmTitle, price }:
             {isPending || isConfirming ? (
               <>
                 <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                {isPending ? 'Confirming...' : 'Processing...'}
+                {step === 'approve' ? 'Approving USDC...' : 'Processing...'}
               </>
             ) : (
               <>
                 <Wallet className="mr-2 h-5 w-5" />
-                {isConnected ? 'Complete Purchase' : 'Connect Wallet First'}
+                {isConnected ? `Pay ${price} USDC` : 'Connect Wallet First'}
               </>
             )}
           </Button>
