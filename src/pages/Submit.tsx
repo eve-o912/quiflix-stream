@@ -6,10 +6,15 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
 import { Film, DollarSign, Upload, Image, Video, FileText } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+import { useNavigate } from "react-router-dom";
 
 const Submit = () => {
+  const navigate = useNavigate();
+  const [walletAddress, setWalletAddress] = useState<string | null>(null);
+  const [isLoadingWallet, setIsLoadingWallet] = useState(true);
   const [formData, setFormData] = useState({
     title: "",
     director: "",
@@ -21,11 +26,34 @@ const Submit = () => {
     releaseDate: "",
     castCrew: "",
     tags: [] as string[],
-    price: "0.05",
-    royalty: "5",
+    purchasePrice: "10",
+    secondaryPrice: "15",
   });
 
-  const walletAddress = "0x39bA...34E7";
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        navigate('/auth');
+        return;
+      }
+
+      // Fetch user's wallet
+      const { data: walletData } = await supabase
+        .from('custodial_wallets')
+        .select('wallet_address')
+        .eq('user_id', user.id)
+        .eq('network', 'base')
+        .single();
+
+      if (walletData) {
+        setWalletAddress(walletData.wallet_address);
+      }
+      setIsLoadingWallet(false);
+    };
+
+    checkAuth();
+  }, [navigate]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -47,7 +75,15 @@ const Submit = () => {
               </p>
               <div className="mt-4 inline-flex items-center gap-2 rounded-lg bg-secondary px-3 py-2">
                 <span className="text-sm text-muted-foreground">Connected:</span>
-                <code className="text-sm text-foreground">{walletAddress}</code>
+                {isLoadingWallet ? (
+                  <div className="h-4 w-24 animate-pulse rounded bg-muted" />
+                ) : walletAddress ? (
+                  <code className="text-sm text-foreground">
+                    {walletAddress.slice(0, 6)}...{walletAddress.slice(-4)}
+                  </code>
+                ) : (
+                  <span className="text-sm text-destructive">No wallet connected</span>
+                )}
               </div>
             </div>
 
@@ -220,37 +256,38 @@ const Submit = () => {
 
                   <div className="grid gap-6 md:grid-cols-2">
                     <div className="space-y-2">
-                      <Label htmlFor="price" className="text-foreground">
-                        NFT Ticket Price (ETH) <span className="text-destructive">*</span>
+                      <Label htmlFor="purchasePrice" className="text-foreground">
+                        Purchase Price (USDT/USDC) <span className="text-destructive">*</span>
                       </Label>
                       <Input
-                        id="price"
+                        id="purchasePrice"
                         type="number"
-                        step="0.001"
-                        value={formData.price}
-                        onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+                        step="0.01"
+                        min="0"
+                        value={formData.purchasePrice}
+                        onChange={(e) => setFormData({ ...formData, purchasePrice: e.target.value })}
                         className="border-border bg-secondary text-foreground"
                       />
                       <p className="text-xs text-muted-foreground">
-                        Price viewers pay to watch and own your film NFT
+                        Initial price viewers pay to watch and own your film
                       </p>
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="royalty" className="text-foreground">
-                        Creator Royalty % <span className="text-destructive">*</span>
+                      <Label htmlFor="secondaryPrice" className="text-foreground">
+                        Resale Price (USDT/USDC) <span className="text-destructive">*</span>
                       </Label>
                       <Input
-                        id="royalty"
+                        id="secondaryPrice"
                         type="number"
+                        step="0.01"
                         min="0"
-                        max="10"
-                        value={formData.royalty}
-                        onChange={(e) => setFormData({ ...formData, royalty: e.target.value })}
+                        value={formData.secondaryPrice}
+                        onChange={(e) => setFormData({ ...formData, secondaryPrice: e.target.value })}
                         className="border-border bg-secondary text-foreground"
                       />
                       <p className="text-xs text-muted-foreground">
-                        Royalty on secondary NFT sales (0-10%)
+                        Price for secondary sales of your film NFT
                       </p>
                     </div>
                   </div>
