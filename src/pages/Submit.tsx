@@ -26,8 +26,10 @@ const Submit = () => {
     releaseDate: "",
     castCrew: "",
     tags: [] as string[],
-    purchasePrice: "10",
-    secondaryPrice: "15",
+    directPurchasePrice: "10",
+    nftPrimaryPrice: "15",
+    nftResalePrice: "20",
+    nftSupply: "100",
   });
 
   useEffect(() => {
@@ -256,38 +258,74 @@ const Submit = () => {
 
                   <div className="grid gap-6 md:grid-cols-2">
                     <div className="space-y-2">
-                      <Label htmlFor="purchasePrice" className="text-foreground">
-                        Purchase Price (USDT/USDC) <span className="text-destructive">*</span>
+                      <Label htmlFor="directPurchasePrice" className="text-foreground">
+                        Direct Film Purchase (USDT/USDC) <span className="text-destructive">*</span>
                       </Label>
                       <Input
-                        id="purchasePrice"
+                        id="directPurchasePrice"
                         type="number"
                         step="0.01"
                         min="0"
-                        value={formData.purchasePrice}
-                        onChange={(e) => setFormData({ ...formData, purchasePrice: e.target.value })}
+                        value={formData.directPurchasePrice}
+                        onChange={(e) => setFormData({ ...formData, directPurchasePrice: e.target.value })}
                         className="border-border bg-secondary text-foreground"
                       />
                       <p className="text-xs text-muted-foreground">
-                        Initial price viewers pay to watch and own your film
+                        Price for viewers to buy and watch your film directly (no NFT)
                       </p>
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="secondaryPrice" className="text-foreground">
-                        Resale Price (USDT/USDC) <span className="text-destructive">*</span>
+                      <Label htmlFor="nftPrimaryPrice" className="text-foreground">
+                        NFT Primary Sale (USDT/USDC) <span className="text-destructive">*</span>
                       </Label>
                       <Input
-                        id="secondaryPrice"
+                        id="nftPrimaryPrice"
                         type="number"
                         step="0.01"
                         min="0"
-                        value={formData.secondaryPrice}
-                        onChange={(e) => setFormData({ ...formData, secondaryPrice: e.target.value })}
+                        value={formData.nftPrimaryPrice}
+                        onChange={(e) => setFormData({ ...formData, nftPrimaryPrice: e.target.value })}
                         className="border-border bg-secondary text-foreground"
                       />
                       <p className="text-xs text-muted-foreground">
-                        Price for secondary sales of your film NFT
+                        Initial price for buying your film as an NFT
+                      </p>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="nftResalePrice" className="text-foreground">
+                        NFT Resale Price (USDT/USDC) <span className="text-destructive">*</span>
+                      </Label>
+                      <Input
+                        id="nftResalePrice"
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        value={formData.nftResalePrice}
+                        onChange={(e) => setFormData({ ...formData, nftResalePrice: e.target.value })}
+                        className="border-border bg-secondary text-foreground"
+                      />
+                      <p className="text-xs text-muted-foreground">
+                        Price for secondary market sales of your film NFT
+                      </p>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="nftSupply" className="text-foreground">
+                        NFT Supply <span className="text-destructive">*</span>
+                      </Label>
+                      <Input
+                        id="nftSupply"
+                        type="number"
+                        min="1"
+                        step="1"
+                        value={formData.nftSupply}
+                        onChange={(e) => setFormData({ ...formData, nftSupply: e.target.value })}
+                        className="border-border bg-secondary text-foreground"
+                      />
+                      <p className="text-xs text-muted-foreground">
+                        Total number of NFTs to be minted for this film
                       </p>
                     </div>
                   </div>
