@@ -41,6 +41,172 @@ export type Database = {
         }
         Relationships: []
       }
+      earnings: {
+        Row: {
+          amount: number
+          claimed: boolean | null
+          created_at: string | null
+          film_id: string
+          id: string
+          source: string
+          tx_hash: string | null
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          claimed?: boolean | null
+          created_at?: string | null
+          film_id: string
+          id?: string
+          source: string
+          tx_hash?: string | null
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          claimed?: boolean | null
+          created_at?: string | null
+          film_id?: string
+          id?: string
+          source?: string
+          tx_hash?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "earnings_film_id_fkey"
+            columns: ["film_id"]
+            isOneToOne: false
+            referencedRelation: "films"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      films: {
+        Row: {
+          available_shares: number | null
+          created_at: string | null
+          creator_id: string
+          creator_revenue_share: number | null
+          description: string | null
+          direct_price: number | null
+          director: string | null
+          duration_minutes: number | null
+          film_url: string | null
+          genre: string | null
+          id: string
+          investment_price_per_share: number | null
+          investor_revenue_share: number | null
+          nft_price: number | null
+          platform_fee: number | null
+          poster_url: string | null
+          rating: number | null
+          release_year: number | null
+          status: Database["public"]["Enums"]["film_status"] | null
+          title: string
+          total_earnings: number | null
+          total_shares: number | null
+          trailer_url: string | null
+          updated_at: string | null
+          views: number | null
+        }
+        Insert: {
+          available_shares?: number | null
+          created_at?: string | null
+          creator_id: string
+          creator_revenue_share?: number | null
+          description?: string | null
+          direct_price?: number | null
+          director?: string | null
+          duration_minutes?: number | null
+          film_url?: string | null
+          genre?: string | null
+          id?: string
+          investment_price_per_share?: number | null
+          investor_revenue_share?: number | null
+          nft_price?: number | null
+          platform_fee?: number | null
+          poster_url?: string | null
+          rating?: number | null
+          release_year?: number | null
+          status?: Database["public"]["Enums"]["film_status"] | null
+          title: string
+          total_earnings?: number | null
+          total_shares?: number | null
+          trailer_url?: string | null
+          updated_at?: string | null
+          views?: number | null
+        }
+        Update: {
+          available_shares?: number | null
+          created_at?: string | null
+          creator_id?: string
+          creator_revenue_share?: number | null
+          description?: string | null
+          direct_price?: number | null
+          director?: string | null
+          duration_minutes?: number | null
+          film_url?: string | null
+          genre?: string | null
+          id?: string
+          investment_price_per_share?: number | null
+          investor_revenue_share?: number | null
+          nft_price?: number | null
+          platform_fee?: number | null
+          poster_url?: string | null
+          rating?: number | null
+          release_year?: number | null
+          status?: Database["public"]["Enums"]["film_status"] | null
+          title?: string
+          total_earnings?: number | null
+          total_shares?: number | null
+          trailer_url?: string | null
+          updated_at?: string | null
+          views?: number | null
+        }
+        Relationships: []
+      }
+      investments: {
+        Row: {
+          amount_invested: number
+          created_at: string | null
+          earnings_claimed: number | null
+          film_id: string
+          id: string
+          investor_id: string
+          shares_owned: number
+          tx_hash: string | null
+        }
+        Insert: {
+          amount_invested: number
+          created_at?: string | null
+          earnings_claimed?: number | null
+          film_id: string
+          id?: string
+          investor_id: string
+          shares_owned: number
+          tx_hash?: string | null
+        }
+        Update: {
+          amount_invested?: number
+          created_at?: string | null
+          earnings_claimed?: number | null
+          film_id?: string
+          id?: string
+          investor_id?: string
+          shares_owned?: number
+          tx_hash?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "investments_film_id_fkey"
+            columns: ["film_id"]
+            isOneToOne: false
+            referencedRelation: "films"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           created_at: string | null
@@ -65,6 +231,50 @@ export type Database = {
         }
         Relationships: []
       }
+      purchases: {
+        Row: {
+          amount: number
+          created_at: string | null
+          currency: string | null
+          film_id: string
+          id: string
+          network: string
+          purchase_type: Database["public"]["Enums"]["purchase_type"]
+          tx_hash: string | null
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string | null
+          currency?: string | null
+          film_id: string
+          id?: string
+          network: string
+          purchase_type: Database["public"]["Enums"]["purchase_type"]
+          tx_hash?: string | null
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string | null
+          currency?: string | null
+          film_id?: string
+          id?: string
+          network?: string
+          purchase_type?: Database["public"]["Enums"]["purchase_type"]
+          tx_hash?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "purchases_film_id_fkey"
+            columns: ["film_id"]
+            isOneToOne: false
+            referencedRelation: "films"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -73,7 +283,8 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      film_status: "draft" | "pending" | "approved" | "rejected"
+      purchase_type: "nft" | "direct" | "investment"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -200,6 +411,9 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      film_status: ["draft", "pending", "approved", "rejected"],
+      purchase_type: ["nft", "direct", "investment"],
+    },
   },
 } as const

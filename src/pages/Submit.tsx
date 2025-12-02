@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
-import { Film, DollarSign, Upload, Image, Video, FileText } from "lucide-react";
+import { Film, DollarSign, Upload, Image, Video, FileText, TrendingUp, Loader2 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -15,21 +15,20 @@ const Submit = () => {
   const navigate = useNavigate();
   const [walletAddress, setWalletAddress] = useState<string | null>(null);
   const [isLoadingWallet, setIsLoadingWallet] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     title: "",
     director: "",
     description: "",
     genre: "",
     duration: "",
-    language: "English",
-    country: "United States",
-    releaseDate: "",
-    castCrew: "",
-    tags: [] as string[],
+    releaseYear: new Date().getFullYear().toString(),
     directPurchasePrice: "10",
     nftPrimaryPrice: "15",
-    nftResalePrice: "20",
-    nftSupply: "100",
+    investmentPricePerShare: "2",
+    totalShares: "100",
+    creatorRevenueShare: "70",
+    investorRevenueShare: "20",
   });
 
   useEffect(() => {
@@ -40,7 +39,6 @@ const Submit = () => {
         return;
       }
 
-      // Fetch user's wallet
       const { data: walletData } = await supabase
         .from('custodial_wallets')
         .select('wallet_address')
@@ -57,9 +55,53 @@ const Submit = () => {
     checkAuth();
   }, [navigate]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    toast.success("Film submitted for review!");
+    
+    if (!formData.title || !formData.director || !formData.description) {
+      toast.error("Please fill in all required fields");
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast.error("Please sign in to submit a film");
+        navigate('/auth');
+        return;
+      }
+
+      const { error } = await supabase.from('films').insert({
+        creator_id: user.id,
+        title: formData.title,
+        director: formData.director,
+        description: formData.description,
+        genre: formData.genre || null,
+        duration_minutes: formData.duration ? parseInt(formData.duration) : null,
+        release_year: formData.releaseYear ? parseInt(formData.releaseYear) : null,
+        direct_price: parseFloat(formData.directPurchasePrice),
+        nft_price: parseFloat(formData.nftPrimaryPrice),
+        investment_price_per_share: parseFloat(formData.investmentPricePerShare),
+        total_shares: parseInt(formData.totalShares),
+        available_shares: parseInt(formData.totalShares),
+        creator_revenue_share: parseFloat(formData.creatorRevenueShare),
+        investor_revenue_share: parseFloat(formData.investorRevenueShare),
+        platform_fee: 100 - parseFloat(formData.creatorRevenueShare) - parseFloat(formData.investorRevenueShare),
+        status: 'pending',
+      });
+
+      if (error) throw error;
+
+      toast.success("Film submitted for review! You'll be notified when approved.");
+      navigate('/my-films');
+    } catch (error) {
+      console.error('Error submitting film:', error);
+      toast.error("Failed to submit film. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -73,7 +115,7 @@ const Submit = () => {
             <div className="mb-8">
               <h1 className="mb-2 text-4xl font-bold text-foreground">Submit Your Film</h1>
               <p className="text-muted-foreground">
-                Upload your film to QuiFlix and start earning from your creative work
+                Upload your film to QuiFlix. Earn from sales and let fans invest in your success.
               </p>
               <div className="mt-4 inline-flex items-center gap-2 rounded-lg bg-secondary px-3 py-2">
                 <span className="text-sm text-muted-foreground">Connected:</span>
@@ -114,6 +156,7 @@ const Submit = () => {
                         value={formData.title}
                         onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                         className="border-border bg-secondary text-foreground"
+                        required
                       />
                     </div>
 
@@ -127,6 +170,7 @@ const Submit = () => {
                         value={formData.director}
                         onChange={(e) => setFormData({ ...formData, director: e.target.value })}
                         className="border-border bg-secondary text-foreground"
+                        required
                       />
                     </div>
                   </div>
@@ -142,17 +186,16 @@ const Submit = () => {
                       value={formData.description}
                       onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                       className="border-border bg-secondary text-foreground"
+                      required
                     />
                   </div>
 
                   <div className="mt-4 grid gap-6 md:grid-cols-3">
                     <div className="space-y-2">
-                      <Label htmlFor="genre" className="text-foreground">
-                        Genre <span className="text-destructive">*</span>
-                      </Label>
+                      <Label htmlFor="genre" className="text-foreground">Genre</Label>
                       <Input
                         id="genre"
-                        placeholder="Select genre"
+                        placeholder="e.g., Drama, Sci-Fi"
                         value={formData.genre}
                         onChange={(e) => setFormData({ ...formData, genre: e.target.value })}
                         className="border-border bg-secondary text-foreground"
@@ -160,9 +203,7 @@ const Submit = () => {
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="duration" className="text-foreground">
-                        Duration (minutes) <span className="text-destructive">*</span>
-                      </Label>
+                      <Label htmlFor="duration" className="text-foreground">Duration (minutes)</Label>
                       <Input
                         id="duration"
                         type="number"
@@ -174,71 +215,15 @@ const Submit = () => {
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="rating" className="text-foreground">Rating</Label>
+                      <Label htmlFor="releaseYear" className="text-foreground">Release Year</Label>
                       <Input
-                        id="rating"
-                        placeholder="Select rating"
+                        id="releaseYear"
+                        type="number"
+                        value={formData.releaseYear}
+                        onChange={(e) => setFormData({ ...formData, releaseYear: e.target.value })}
                         className="border-border bg-secondary text-foreground"
                       />
                     </div>
-                  </div>
-
-                  <div className="mt-4 grid gap-6 md:grid-cols-3">
-                    <div className="space-y-2">
-                      <Label htmlFor="language" className="text-foreground">
-                        Language <span className="text-destructive">*</span>
-                      </Label>
-                      <Input
-                        id="language"
-                        value={formData.language}
-                        onChange={(e) => setFormData({ ...formData, language: e.target.value })}
-                        className="border-border bg-secondary text-foreground"
-                      />
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="country" className="text-foreground">
-                        Country <span className="text-destructive">*</span>
-                      </Label>
-                      <Input
-                        id="country"
-                        value={formData.country}
-                        onChange={(e) => setFormData({ ...formData, country: e.target.value })}
-                        className="border-border bg-secondary text-foreground"
-                      />
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="releaseDate" className="text-foreground">Release Date</Label>
-                      <Input
-                        id="releaseDate"
-                        type="text"
-                        placeholder="dd/mm/yyyy"
-                        value={formData.releaseDate}
-                        onChange={(e) => setFormData({ ...formData, releaseDate: e.target.value })}
-                        className="border-border bg-secondary text-foreground"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="mt-4 space-y-2">
-                    <Label htmlFor="castCrew" className="text-foreground">Cast & Crew</Label>
-                    <Textarea
-                      id="castCrew"
-                      placeholder="List main cast members and key crew..."
-                      rows={3}
-                      value={formData.castCrew}
-                      onChange={(e) => setFormData({ ...formData, castCrew: e.target.value })}
-                      className="border-border bg-secondary text-foreground"
-                    />
-                  </div>
-
-                  <div className="mt-4 space-y-2">
-                    <Label className="text-foreground">Tags</Label>
-                    <Input
-                      placeholder="Add a tag..."
-                      className="border-border bg-secondary text-foreground"
-                    />
                   </div>
                 </CardContent>
               </Card>
@@ -251,15 +236,15 @@ const Submit = () => {
                       <DollarSign className="h-5 w-5 text-primary" />
                     </div>
                     <div>
-                      <h2 className="text-lg font-semibold text-foreground">Pricing & Economics</h2>
-                      <p className="text-sm text-muted-foreground">Set your film's pricing and revenue sharing</p>
+                      <h2 className="text-lg font-semibold text-foreground">Pricing & Sales</h2>
+                      <p className="text-sm text-muted-foreground">Set prices for direct purchase and NFT</p>
                     </div>
                   </div>
 
                   <div className="grid gap-6 md:grid-cols-2">
                     <div className="space-y-2">
                       <Label htmlFor="directPurchasePrice" className="text-foreground">
-                        Direct Film Purchase (USDT/USDC) <span className="text-destructive">*</span>
+                        Direct Purchase Price (USDC) <span className="text-destructive">*</span>
                       </Label>
                       <Input
                         id="directPurchasePrice"
@@ -271,13 +256,13 @@ const Submit = () => {
                         className="border-border bg-secondary text-foreground"
                       />
                       <p className="text-xs text-muted-foreground">
-                        Price for viewers to buy and watch your film directly (no NFT)
+                        Price for stream-only access (no NFT)
                       </p>
                     </div>
 
                     <div className="space-y-2">
                       <Label htmlFor="nftPrimaryPrice" className="text-foreground">
-                        NFT Primary Sale (USDT/USDC) <span className="text-destructive">*</span>
+                        NFT Price (USDC) <span className="text-destructive">*</span>
                       </Label>
                       <Input
                         id="nftPrimaryPrice"
@@ -289,50 +274,91 @@ const Submit = () => {
                         className="border-border bg-secondary text-foreground"
                       />
                       <p className="text-xs text-muted-foreground">
-                        Initial price for buying your film as an NFT
-                      </p>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="nftResalePrice" className="text-foreground">
-                        NFT Resale Price (USDT/USDC) <span className="text-destructive">*</span>
-                      </Label>
-                      <Input
-                        id="nftResalePrice"
-                        type="number"
-                        step="0.01"
-                        min="0"
-                        value={formData.nftResalePrice}
-                        onChange={(e) => setFormData({ ...formData, nftResalePrice: e.target.value })}
-                        className="border-border bg-secondary text-foreground"
-                      />
-                      <p className="text-xs text-muted-foreground">
-                        Price for secondary market sales of your film NFT
-                      </p>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="nftSupply" className="text-foreground">
-                        NFT Supply <span className="text-destructive">*</span>
-                      </Label>
-                      <Input
-                        id="nftSupply"
-                        type="number"
-                        min="1"
-                        step="1"
-                        value={formData.nftSupply}
-                        onChange={(e) => setFormData({ ...formData, nftSupply: e.target.value })}
-                        className="border-border bg-secondary text-foreground"
-                      />
-                      <p className="text-xs text-muted-foreground">
-                        Total number of NFTs to be minted for this film
+                        Price for NFT ownership (resellable)
                       </p>
                     </div>
                   </div>
                 </CardContent>
               </Card>
 
-              {/* File Uploads */}
+              {/* Investment Options */}
+              <Card className="border-border bg-card border-primary/30">
+                <CardContent className="p-6">
+                  <div className="mb-4 flex items-center gap-2">
+                    <div className="rounded bg-primary/20 p-2">
+                      <TrendingUp className="h-5 w-5 text-primary" />
+                    </div>
+                    <div>
+                      <h2 className="text-lg font-semibold text-foreground">Fan Investment</h2>
+                      <p className="text-sm text-muted-foreground">Let fans invest in your film and share in its success</p>
+                    </div>
+                  </div>
+
+                  <div className="grid gap-6 md:grid-cols-2">
+                    <div className="space-y-2">
+                      <Label htmlFor="investmentPricePerShare" className="text-foreground">
+                        Price per Share (USDC)
+                      </Label>
+                      <Input
+                        id="investmentPricePerShare"
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        value={formData.investmentPricePerShare}
+                        onChange={(e) => setFormData({ ...formData, investmentPricePerShare: e.target.value })}
+                        className="border-border bg-secondary text-foreground"
+                      />
+                      <p className="text-xs text-muted-foreground">
+                        Set to 0 to disable investment
+                      </p>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="totalShares" className="text-foreground">
+                        Total Shares Available
+                      </Label>
+                      <Input
+                        id="totalShares"
+                        type="number"
+                        min="1"
+                        step="1"
+                        value={formData.totalShares}
+                        onChange={(e) => setFormData({ ...formData, totalShares: e.target.value })}
+                        className="border-border bg-secondary text-foreground"
+                      />
+                      <p className="text-xs text-muted-foreground">
+                        Number of investment shares to offer
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Revenue Sharing Info */}
+                  <div className="mt-6 p-4 rounded-lg bg-secondary/50 border border-border">
+                    <h3 className="font-semibold text-foreground mb-3">Revenue Distribution</h3>
+                    <div className="grid grid-cols-3 gap-4 text-center">
+                      <div>
+                        <div className="text-2xl font-bold text-primary">{formData.creatorRevenueShare}%</div>
+                        <div className="text-xs text-muted-foreground">You (Creator)</div>
+                      </div>
+                      <div>
+                        <div className="text-2xl font-bold text-primary">{formData.investorRevenueShare}%</div>
+                        <div className="text-xs text-muted-foreground">Investors Pool</div>
+                      </div>
+                      <div>
+                        <div className="text-2xl font-bold text-muted-foreground">
+                          {100 - parseFloat(formData.creatorRevenueShare) - parseFloat(formData.investorRevenueShare)}%
+                        </div>
+                        <div className="text-xs text-muted-foreground">Platform</div>
+                      </div>
+                    </div>
+                    <p className="text-xs text-muted-foreground text-center mt-3">
+                      Every purchase generates revenue shared automatically
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* File Uploads Placeholder */}
               <Card className="border-border bg-card">
                 <CardContent className="p-6">
                   <div className="mb-4 flex items-center gap-2">
@@ -341,60 +367,44 @@ const Submit = () => {
                     </div>
                     <div>
                       <h2 className="text-lg font-semibold text-foreground">File Uploads</h2>
-                      <p className="text-sm text-muted-foreground">Upload your film files and promotional materials</p>
+                      <p className="text-sm text-muted-foreground">Upload your film files (coming soon)</p>
                     </div>
                   </div>
 
-                  <div className="space-y-6">
-                    <div className="space-y-2">
-                      <Label className="text-foreground">
-                        Film Poster <span className="text-destructive">*</span>
-                      </Label>
-                      <div className="flex cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-border bg-secondary/50 p-12 transition-colors hover:bg-secondary">
-                        <Image className="mb-2 h-12 w-12 text-muted-foreground" />
-                        <p className="text-sm text-foreground">Click to upload poster</p>
-                        <p className="text-xs text-muted-foreground">PNG, JPG up to 10MB</p>
-                      </div>
+                  <div className="grid gap-4 md:grid-cols-3">
+                    <div className="flex cursor-not-allowed flex-col items-center justify-center rounded-lg border-2 border-dashed border-border bg-secondary/30 p-8 opacity-60">
+                      <Image className="mb-2 h-8 w-8 text-muted-foreground" />
+                      <p className="text-sm text-muted-foreground">Poster</p>
                     </div>
-
-                    <div className="space-y-2">
-                      <Label className="text-foreground">Trailer</Label>
-                      <div className="flex cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-border bg-secondary/50 p-12 transition-colors hover:bg-secondary">
-                        <Video className="mb-2 h-12 w-12 text-muted-foreground" />
-                        <p className="text-sm text-foreground">Click to upload trailer</p>
-                        <p className="text-xs text-muted-foreground">MP4, MOV up to 500MB</p>
-                      </div>
+                    <div className="flex cursor-not-allowed flex-col items-center justify-center rounded-lg border-2 border-dashed border-border bg-secondary/30 p-8 opacity-60">
+                      <Video className="mb-2 h-8 w-8 text-muted-foreground" />
+                      <p className="text-sm text-muted-foreground">Trailer</p>
                     </div>
-
-                    <div className="space-y-2">
-                      <Label className="text-foreground">
-                        Full Film <span className="text-destructive">*</span>
-                      </Label>
-                      <div className="flex cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-border bg-secondary/50 p-12 transition-colors hover:bg-secondary">
-                        <Film className="mb-2 h-12 w-12 text-muted-foreground" />
-                        <p className="text-sm text-foreground">Click to upload full film</p>
-                        <p className="text-xs text-muted-foreground">MP4, MOV up to 5GB</p>
-                      </div>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label className="text-foreground">Script (Optional)</Label>
-                      <div className="flex cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-border bg-secondary/50 p-12 transition-colors hover:bg-secondary">
-                        <FileText className="mb-2 h-12 w-12 text-muted-foreground" />
-                        <p className="text-sm text-foreground">Click to upload script</p>
-                        <p className="text-xs text-muted-foreground">PDF, DOC, TXT up to 50MB</p>
-                      </div>
+                    <div className="flex cursor-not-allowed flex-col items-center justify-center rounded-lg border-2 border-dashed border-border bg-secondary/30 p-8 opacity-60">
+                      <Film className="mb-2 h-8 w-8 text-muted-foreground" />
+                      <p className="text-sm text-muted-foreground">Full Film</p>
                     </div>
                   </div>
+                  <p className="text-xs text-muted-foreground mt-3 text-center">
+                    File uploads will be available after approval
+                  </p>
                 </CardContent>
               </Card>
 
-              <div className="flex justify-end gap-4">
-                <Button type="button" variant="outline" className="border-border">
+              {/* Submit Buttons */}
+              <div className="flex justify-end gap-4 pt-4">
+                <Button type="button" variant="outline" onClick={() => navigate('/browse')}>
                   Cancel
                 </Button>
-                <Button type="submit" className="bg-primary text-primary-foreground hover:bg-primary/90">
-                  Submit Film
+                <Button type="submit" disabled={isSubmitting} className="min-w-[150px]">
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Submitting...
+                    </>
+                  ) : (
+                    'Submit Film'
+                  )}
                 </Button>
               </div>
             </form>

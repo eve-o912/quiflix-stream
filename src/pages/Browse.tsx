@@ -2,61 +2,91 @@ import { Header } from "@/components/Header";
 import { Sidebar } from "@/components/Sidebar";
 import { FilmCard } from "@/components/FilmCard";
 import { Footer } from "@/components/Footer";
-import { Play, TrendingUp, Clock, Star } from "lucide-react";
+import { Play, TrendingUp, Clock, Star, Loader2 } from "lucide-react";
+import { useFilms } from "@/hooks/useFilms";
+
+// Sample films for when database is empty
+const sampleFilms = [
+  {
+    id: "sample-1",
+    title: "Neon Dreams",
+    poster_url: "https://images.unsplash.com/photo-1518676590629-3dcbd9c5a5c9?w=800&h=450&fit=crop",
+    views: 125000,
+    rating: 4.8,
+    direct_price: 5.99,
+    nft_price: 9.99,
+    investment_price_per_share: 2.5,
+    available_shares: 65,
+    total_shares: 100,
+  },
+  {
+    id: "sample-2",
+    title: "Ocean's Edge",
+    poster_url: "https://images.unsplash.com/photo-1505142468610-359e7d316be0?w=800&h=450&fit=crop",
+    views: 98000,
+    rating: 4.6,
+    direct_price: 4.99,
+    nft_price: 7.99,
+    investment_price_per_share: 1.5,
+    available_shares: 80,
+    total_shares: 100,
+  },
+  {
+    id: "sample-3",
+    title: "Mind Palace",
+    poster_url: "https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=800&h=450&fit=crop",
+    views: 156000,
+    rating: 4.9,
+    direct_price: 6.99,
+    nft_price: 12.99,
+    investment_price_per_share: 5,
+    available_shares: 20,
+    total_shares: 100,
+  },
+  {
+    id: "sample-4",
+    title: "Crimson Sky",
+    poster_url: "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=1920&h=1080&fit=crop",
+    views: 89000,
+    rating: 4.7,
+    direct_price: 5.49,
+    nft_price: 8.99,
+    investment_price_per_share: 3,
+    available_shares: 45,
+    total_shares: 100,
+  },
+  {
+    id: "sample-5",
+    title: "Silent Echo",
+    poster_url: "https://images.unsplash.com/photo-1440404653325-ab127d49abc1?w=1920&h=1080&fit=crop",
+    views: 112000,
+    rating: 4.5,
+    direct_price: 4.49,
+    nft_price: 6.99,
+    investment_price_per_share: 0,
+    available_shares: 0,
+    total_shares: 100,
+  },
+  {
+    id: "sample-6",
+    title: "Digital Horizon",
+    poster_url: "https://images.unsplash.com/photo-1478720568477-152d9b164e26?w=800&h=450&fit=crop",
+    views: 78000,
+    rating: 4.4,
+    direct_price: 3.99,
+    nft_price: 5.99,
+    investment_price_per_share: 1,
+    available_shares: 90,
+    total_shares: 100,
+  },
+];
 
 const Browse = () => {
-  const films = [
-    {
-      id: 1,
-      title: "Neon Dreams",
-      image: "https://images.unsplash.com/photo-1518676590629-3dcbd9c5a5c9?w=800&h=450&fit=crop",
-      views: 125000,
-      rating: 4.8,
-      price: "5.99",
-    },
-    {
-      id: 2,
-      title: "Ocean's Edge",
-      image: "https://images.unsplash.com/photo-1505142468610-359e7d316be0?w=800&h=450&fit=crop",
-      views: 98000,
-      rating: 4.6,
-      price: "4.99",
-    },
-    {
-      id: 3,
-      title: "Mind Palace",
-      image: "https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=800&h=450&fit=crop",
-      views: 156000,
-      rating: 4.9,
-      price: "6.99",
-    },
-    {
-      id: 4,
-      title: "Crimson Sky",
-      image: "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=1920&h=1080&fit=crop",
-      views: 89000,
-      rating: 4.7,
-      price: "5.49",
-    },
-    {
-      id: 5,
-      title: "Silent Echo",
-      image: "https://images.unsplash.com/photo-1440404653325-ab127d49abc1?w=1920&h=1080&fit=crop",
-      views: 112000,
-      rating: 4.5,
-      price: "4.49",
-    },
-    {
-      id: 6,
-      title: "Digital Horizon",
-      image: "https://images.unsplash.com/photo-1478720568477-152d9b164e26?w=800&h=450&fit=crop",
-      views: 78000,
-      rating: 4.4,
-      price: "3.99",
-    },
-  ];
-
-  const featuredFilm = films[2]; // Mind Palace as featured
+  const { data: dbFilms, isLoading } = useFilms();
+  
+  // Use database films if available, otherwise show samples
+  const films = dbFilms && dbFilms.length > 0 ? dbFilms : sampleFilms;
+  const featuredFilm = films[0];
 
   return (
     <div className="min-h-screen bg-background">
@@ -67,7 +97,7 @@ const Browse = () => {
         {/* Featured Hero Banner */}
         <div className="relative h-[50vh] overflow-hidden">
           <img
-            src={featuredFilm.image}
+            src={featuredFilm.poster_url || "https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=800&h=450&fit=crop"}
             alt={featuredFilm.title}
             className="h-full w-full object-cover"
           />
@@ -89,7 +119,16 @@ const Browse = () => {
                 <span>•</span>
                 <span>{featuredFilm.views.toLocaleString()} views</span>
                 <span>•</span>
-                <span className="text-primary font-semibold">${featuredFilm.price} USDT</span>
+                <span className="text-primary font-semibold">From ${featuredFilm.direct_price} USDC</span>
+                {featuredFilm.available_shares > 0 && (
+                  <>
+                    <span>•</span>
+                    <span className="flex items-center gap-1 text-primary">
+                      <TrendingUp className="h-4 w-4" />
+                      {featuredFilm.available_shares} shares available
+                    </span>
+                  </>
+                )}
               </p>
             </div>
           </div>
@@ -122,19 +161,29 @@ const Browse = () => {
           <div className="mx-auto max-w-7xl">
             <h2 className="mb-6 text-2xl font-bold text-foreground">All Films</h2>
             
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              {films.map((film) => (
-                <FilmCard
-                  key={film.id}
-                  id={film.id}
-                  title={film.title}
-                  image={film.image}
-                  views={film.views}
-                  rating={film.rating}
-                  price={film.price}
-                />
-              ))}
-            </div>
+            {isLoading ? (
+              <div className="flex items-center justify-center py-12">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              </div>
+            ) : (
+              <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                {films.map((film) => (
+                  <FilmCard
+                    key={film.id}
+                    id={film.id}
+                    title={film.title}
+                    image={film.poster_url || ""}
+                    views={film.views}
+                    rating={film.rating}
+                    directPrice={film.direct_price}
+                    nftPrice={film.nft_price}
+                    investmentPricePerShare={film.investment_price_per_share}
+                    availableShares={film.available_shares}
+                    totalShares={film.total_shares}
+                  />
+                ))}
+              </div>
+            )}
           </div>
         </div>
 
@@ -142,25 +191,26 @@ const Browse = () => {
         <section className="border-t border-border bg-gradient-to-r from-card/50 via-card to-card/50 px-8 py-12">
           <div className="mx-auto grid max-w-7xl gap-8 md:grid-cols-4">
             <div className="text-center">
-              <div className="mb-2 text-4xl font-bold text-primary">500+</div>
+              <div className="mb-2 text-4xl font-bold text-primary">{films.length}+</div>
               <div className="text-sm text-muted-foreground">Films Available</div>
             </div>
             <div className="text-center">
-              <div className="mb-2 text-4xl font-bold text-primary">10K+</div>
-              <div className="text-sm text-muted-foreground">NFTs Minted</div>
+              <div className="mb-2 text-4xl font-bold text-primary">
+                {films.filter(f => f.available_shares > 0).length}
+              </div>
+              <div className="text-sm text-muted-foreground">Open for Investment</div>
             </div>
             <div className="text-center">
-              <div className="mb-2 text-4xl font-bold text-primary">$2M+</div>
-              <div className="text-sm text-muted-foreground">Creator Earnings</div>
+              <div className="mb-2 text-4xl font-bold text-primary">70%</div>
+              <div className="text-sm text-muted-foreground">Creator Revenue Share</div>
             </div>
             <div className="text-center">
-              <div className="mb-2 text-4xl font-bold text-primary">50K+</div>
-              <div className="text-sm text-muted-foreground">Active Users</div>
+              <div className="mb-2 text-4xl font-bold text-primary">20%</div>
+              <div className="text-sm text-muted-foreground">Investor Revenue Share</div>
             </div>
           </div>
         </section>
 
-        {/* Footer */}
         <Footer />
       </main>
     </div>
