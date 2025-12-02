@@ -20,7 +20,7 @@ interface PurchaseDialogProps {
 
 export function PurchaseDialog({ open, onOpenChange, filmId, filmTitle, price }: PurchaseDialogProps) {
   const [purchaseType, setPurchaseType] = useState<'nft' | 'direct'>('nft');
-  const [network, setNetwork] = useState<'base' | 'lisk'>('base');
+  const [network, setNetwork] = useState<'base' | 'lisk' | 'scroll'>('base');
   const [step, setStep] = useState<'select' | 'approve' | 'purchase'>('select');
   const { address, isConnected } = useAccount();
   const { writeContract, data: hash, isPending, reset } = useWriteContract();
@@ -141,7 +141,7 @@ export function PurchaseDialog({ open, onOpenChange, filmId, filmTitle, price }:
           {/* Network Selection */}
           <div className="space-y-3">
             <Label className="text-foreground font-semibold">Payment Network</Label>
-            <RadioGroup value={network} onValueChange={(v) => setNetwork(v as 'base' | 'lisk')}>
+            <RadioGroup value={network} onValueChange={(v) => setNetwork(v as 'base' | 'lisk' | 'scroll')}>
               <div className="flex items-center space-x-2 p-4 rounded-lg border border-border hover:bg-secondary/50 cursor-pointer">
                 <RadioGroupItem value="base" id="base" />
                 <Label htmlFor="base" className="flex-1 cursor-pointer">
@@ -163,6 +163,18 @@ export function PurchaseDialog({ open, onOpenChange, filmId, filmTitle, price }:
                       <p className="text-sm text-muted-foreground">Optimized for content creators</p>
                     </div>
                     <div className="h-3 w-3 rounded-full bg-emerald-500" />
+                  </div>
+                </Label>
+              </div>
+              <div className="flex items-center space-x-2 p-4 rounded-lg border border-border hover:bg-secondary/50 cursor-pointer">
+                <RadioGroupItem value="scroll" id="scroll" />
+                <Label htmlFor="scroll" className="flex-1 cursor-pointer">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="font-semibold text-foreground">Scroll Network</p>
+                      <p className="text-sm text-muted-foreground">ZK rollup, low gas fees</p>
+                    </div>
+                    <div className="h-3 w-3 rounded-full bg-amber-500" />
                   </div>
                 </Label>
               </div>

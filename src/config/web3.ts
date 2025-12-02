@@ -1,5 +1,5 @@
 import { createConfig, http } from 'wagmi';
-import { base, mainnet } from 'wagmi/chains';
+import { base, mainnet, scroll } from 'wagmi/chains';
 import { coinbaseWallet, metaMask, walletConnect } from 'wagmi/connectors';
 
 // Lisk Network Configuration
@@ -25,13 +25,14 @@ export const lisk = {
 export const USDC_ADDRESSES = {
   base: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
   lisk: '0x05D032ac25d322df992303dCa074EE7392C117b9',
+  scroll: '0x06eFdBFf2a14a7c8E15944D1F4A48F9F95F663A4',
 } as const;
 
 // Configure wallet connectors
 const projectId = 'YOUR_WALLETCONNECT_PROJECT_ID'; // Replace with your project ID
 
 export const config = createConfig({
-  chains: [base, lisk, mainnet],
+  chains: [base, lisk, scroll, mainnet],
   connectors: [
     metaMask({
       dappMetadata: {
@@ -48,6 +49,7 @@ export const config = createConfig({
   transports: {
     [base.id]: http(),
     [lisk.id]: http(),
+    [scroll.id]: http(),
     [mainnet.id]: http(),
   },
 });
