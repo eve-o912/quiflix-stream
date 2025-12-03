@@ -1,6 +1,6 @@
 import { createConfig, http } from 'wagmi';
 import { base, mainnet, scroll } from 'wagmi/chains';
-import { coinbaseWallet, metaMask, walletConnect } from 'wagmi/connectors';
+import { coinbaseWallet, metaMask } from 'wagmi/connectors';
 
 // Lisk Network Configuration
 export const lisk = {
@@ -48,9 +48,6 @@ export const USDC_ADDRESSES = {
   celo: '0xcebA9300f2b948710d2653dD7B07f33A8B32118C',
 } as const;
 
-// Configure wallet connectors
-const projectId = 'YOUR_WALLETCONNECT_PROJECT_ID'; // Replace with your project ID
-
 export const config = createConfig({
   chains: [base, lisk, scroll, celo, mainnet],
   connectors: [
@@ -64,7 +61,6 @@ export const config = createConfig({
       appName: 'QuiFlix',
       appLogoUrl: 'https://quiflix.app/logo.png',
     }),
-    walletConnect({ projectId }),
   ],
   transports: {
     [base.id]: http(),
