@@ -1,11 +1,9 @@
 import { useState } from 'react';
-import { useAccount, useConnect, useDisconnect } from 'wagmi';
+import { useConnect } from 'wagmi';
 import { supabase } from '@/integrations/supabase/client';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from './ui/dialog';
 import { Button } from './ui/button';
-import { RadioGroup, RadioGroupItem } from './ui/radio-group';
-import { Label } from './ui/label';
-import { Wallet, Shield, Chrome, Loader2, CreditCard, ExternalLink } from 'lucide-react';
+import { Wallet, Shield, Loader2, CreditCard, ExternalLink } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 
 interface WalletSelectionProps {
@@ -15,21 +13,18 @@ interface WalletSelectionProps {
 }
 
 export function WalletSelection({ open, onOpenChange, onWalletConnected }: WalletSelectionProps) {
-  const [walletType, setWalletType] = useState<'custodial' | 'metamask' | 'coinbase' | 'onramp'>('custodial');
-  const [loading, setLoading] = useState(false);
-  const { address, isConnected } = useAccount();
+  const [loading, setLoading] = useState<string | null>(null);
   const { connect, connectors } = useConnect();
-  const { disconnect } = useDisconnect();
 
   const handleCustodialWallet = async () => {
-    setLoading(true);
+    setLoading('custodial');
     try {
       const { data: { user } } = await supabase.auth.getUser();
       
       if (!user) {
         toast({
-          title: 'Not authenticated',
-          description: 'Please sign in first',
+          title: 'Sign in first',
+          description: 'You need an account to create a wallet',
           variant: 'destructive',
         });
         return;
@@ -42,34 +37,37 @@ export function WalletSelection({ open, onOpenChange, onWalletConnected }: Walle
       if (error) throw error;
 
       toast({
-        title: 'Custodial Wallet Created!',
-        description: `Your wallet address: ${data.wallet_address.slice(0, 6)}...${data.wallet_address.slice(-4)}`,
+        title: 'Wallet ready!',
+        description: `Address: ${data.wallet_address.slice(0, 6)}...${data.wallet_address.slice(-4)}`,
       });
 
       onWalletConnected?.();
       onOpenChange(false);
     } catch (error: any) {
       toast({
-        title: 'Wallet Creation Failed',
+        title: 'Something went wrong',
         description: error.message,
         variant: 'destructive',
       });
     } finally {
-      setLoading(false);
+      setLoading(null);
     }
   };
 
-  const handleExternalWallet = async () => {
-    const connector = walletType === 'metamask' 
+  const handleExternalWallet = async (type: 'metamask' | 'coinbase') => {
+    setLoading(type);
+    
+    const connector = type === 'metamask' 
       ? connectors.find(c => c.id === 'metaMask')
       : connectors.find(c => c.id === 'coinbaseWalletSDK');
 
     if (!connector) {
       toast({
-        title: 'Wallet not found',
-        description: `Please install ${walletType === 'metamask' ? 'MetaMask' : 'Coinbase Wallet'}`,
+        title: `${type === 'metamask' ? 'MetaMask' : 'Coinbase Wallet'} not found`,
+        description: `Install the extension to continue`,
         variant: 'destructive',
       });
+      setLoading(null);
       return;
     }
 
@@ -77,15 +75,15 @@ export function WalletSelection({ open, onOpenChange, onWalletConnected }: Walle
       connect({ connector }, {
         onSuccess: () => {
           toast({
-            title: 'Wallet Connected',
-            description: 'Your external wallet has been connected successfully.',
+            title: 'Connected!',
+            description: 'You\'re all set to buy films',
           });
           onWalletConnected?.();
           onOpenChange(false);
         },
         onError: (error) => {
           toast({
-            title: 'Connection Failed',
+            title: 'Connection failed',
             description: error.message,
             variant: 'destructive',
           });
@@ -93,130 +91,109 @@ export function WalletSelection({ open, onOpenChange, onWalletConnected }: Walle
       });
     } catch (error: any) {
       toast({
-        title: 'Connection Failed',
+        title: 'Connection failed',
         description: error.message,
         variant: 'destructive',
       });
+    } finally {
+      setLoading(null);
     }
   };
 
   const handleOnramp = () => {
-    // Open MoonPay/Transak onramp in new tab (using MoonPay as example)
-    const onrampUrl = 'https://www.moonpay.com/buy/usdc';
-    window.open(onrampUrl, '_blank');
+    window.open('https://www.moonpay.com/buy/usdc', '_blank');
     toast({
-      title: 'Fiat Onramp Opened',
-      description: 'Complete your purchase in the new tab, then connect your wallet.',
+      title: 'Buying USDC',
+      description: 'Complete your purchase, then come back and connect',
     });
-  };
-
-  const handleConnect = () => {
-    if (walletType === 'custodial') {
-      handleCustodialWallet();
-    } else if (walletType === 'onramp') {
-      handleOnramp();
-    } else {
-      handleExternalWallet();
-    }
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-[420px]">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 text-2xl">
-            <Wallet className="h-6 w-6 text-primary" />
-            Connect Your Wallet
-          </DialogTitle>
+          <DialogTitle className="text-xl">How do you want to pay?</DialogTitle>
           <DialogDescription>
-            Choose how you want to connect to QuiFlix
+            Pick your preferred wallet
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-6 py-4">
-          <RadioGroup value={walletType} onValueChange={(v) => setWalletType(v as any)}>
-            <div className="flex items-center space-x-2 p-4 rounded-lg border border-border hover:bg-secondary/50 cursor-pointer">
-              <RadioGroupItem value="custodial" id="custodial" />
-              <Label htmlFor="custodial" className="flex-1 cursor-pointer">
-                <div className="flex items-center gap-3">
-                  <Shield className="h-5 w-5 text-primary" />
-                  <div>
-                    <p className="font-semibold text-foreground">Custodial Wallet</p>
-                    <p className="text-sm text-muted-foreground">Easy & secure - we manage your wallet</p>
-                  </div>
-                </div>
-              </Label>
-            </div>
-
-            <div className="flex items-center space-x-2 p-4 rounded-lg border border-border hover:bg-secondary/50 cursor-pointer">
-              <RadioGroupItem value="metamask" id="metamask" />
-              <Label htmlFor="metamask" className="flex-1 cursor-pointer">
-                <div className="flex items-center gap-3">
-                  <Chrome className="h-5 w-5 text-primary" />
-                  <div>
-                    <p className="font-semibold text-foreground">MetaMask</p>
-                    <p className="text-sm text-muted-foreground">Connect your MetaMask wallet</p>
-                  </div>
-                </div>
-              </Label>
-            </div>
-
-            <div className="flex items-center space-x-2 p-4 rounded-lg border border-border hover:bg-secondary/50 cursor-pointer">
-              <RadioGroupItem value="coinbase" id="coinbase" />
-              <Label htmlFor="coinbase" className="flex-1 cursor-pointer">
-                <div className="flex items-center gap-3">
-                  <Wallet className="h-5 w-5 text-primary" />
-                  <div>
-                    <p className="font-semibold text-foreground">Coinbase Wallet</p>
-                    <p className="text-sm text-muted-foreground">Connect your Coinbase Wallet</p>
-                  </div>
-                </div>
-              </Label>
-            </div>
-
-            <div className="flex items-center space-x-2 p-4 rounded-lg border border-primary/50 bg-primary/5 hover:bg-primary/10 cursor-pointer">
-              <RadioGroupItem value="onramp" id="onramp" />
-              <Label htmlFor="onramp" className="flex-1 cursor-pointer">
-                <div className="flex items-center gap-3">
-                  <CreditCard className="h-5 w-5 text-primary" />
-                  <div>
-                    <p className="font-semibold text-foreground">Buy USDC with Card/M-Pesa</p>
-                    <p className="text-sm text-muted-foreground">Convert local currency to USDC</p>
-                  </div>
-                </div>
-              </Label>
-            </div>
-          </RadioGroup>
-
+        <div className="space-y-3 py-4">
+          {/* Custodial - Easiest */}
           <Button
-            onClick={handleConnect}
-            disabled={loading}
-            className="w-full h-12 text-lg"
-            size="lg"
+            variant="outline"
+            onClick={handleCustodialWallet}
+            disabled={loading !== null}
+            className="w-full h-auto p-4 justify-start gap-4 hover:border-primary/50"
           >
-            {loading ? (
-              <>
-                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                Connecting...
-              </>
-            ) : walletType === 'onramp' ? (
-              <>
-                <ExternalLink className="mr-2 h-5 w-5" />
-                Buy USDC
-              </>
-            ) : (
-              <>
-                <Wallet className="mr-2 h-5 w-5" />
-                Connect Wallet
-              </>
-            )}
+            <div className="rounded-lg bg-primary/10 p-2">
+              <Shield className="h-5 w-5 text-primary" />
+            </div>
+            <div className="text-left flex-1">
+              <p className="font-medium">QuiFlix Wallet</p>
+              <p className="text-sm text-muted-foreground">No setup needed</p>
+            </div>
+            {loading === 'custodial' && <Loader2 className="h-4 w-4 animate-spin" />}
           </Button>
 
-          {walletType === 'onramp' && (
-            <p className="text-xs text-center text-muted-foreground">
-              Supports credit/debit cards, bank transfer, and M-Pesa
-            </p>
-          )}
+          {/* MetaMask */}
+          <Button
+            variant="outline"
+            onClick={() => handleExternalWallet('metamask')}
+            disabled={loading !== null}
+            className="w-full h-auto p-4 justify-start gap-4 hover:border-primary/50"
+          >
+            <div className="rounded-lg bg-orange-500/10 p-2">
+              <img src="https://upload.wikimedia.org/wikipedia/commons/3/36/MetaMask_Fox.svg" alt="MetaMask" className="h-5 w-5" />
+            </div>
+            <div className="text-left flex-1">
+              <p className="font-medium">MetaMask</p>
+              <p className="text-sm text-muted-foreground">Browser extension</p>
+            </div>
+            {loading === 'metamask' && <Loader2 className="h-4 w-4 animate-spin" />}
+          </Button>
+
+          {/* Coinbase */}
+          <Button
+            variant="outline"
+            onClick={() => handleExternalWallet('coinbase')}
+            disabled={loading !== null}
+            className="w-full h-auto p-4 justify-start gap-4 hover:border-primary/50"
+          >
+            <div className="rounded-lg bg-blue-500/10 p-2">
+              <Wallet className="h-5 w-5 text-blue-500" />
+            </div>
+            <div className="text-left flex-1">
+              <p className="font-medium">Coinbase Wallet</p>
+              <p className="text-sm text-muted-foreground">Mobile or extension</p>
+            </div>
+            {loading === 'coinbase' && <Loader2 className="h-4 w-4 animate-spin" />}
+          </Button>
+
+          <div className="relative py-2">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-border" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-background px-2 text-muted-foreground">or</span>
+            </div>
+          </div>
+
+          {/* Buy USDC */}
+          <Button
+            variant="ghost"
+            onClick={handleOnramp}
+            className="w-full h-auto p-4 justify-start gap-4"
+          >
+            <div className="rounded-lg bg-green-500/10 p-2">
+              <CreditCard className="h-5 w-5 text-green-500" />
+            </div>
+            <div className="text-left flex-1">
+              <p className="font-medium">Buy USDC first</p>
+              <p className="text-sm text-muted-foreground">Card, bank, or M-Pesa</p>
+            </div>
+            <ExternalLink className="h-4 w-4 text-muted-foreground" />
+          </Button>
         </div>
       </DialogContent>
     </Dialog>

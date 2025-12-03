@@ -6,7 +6,7 @@ import { Button } from './ui/button';
 import { RadioGroup, RadioGroupItem } from './ui/radio-group';
 import { Label } from './ui/label';
 import { Input } from './ui/input';
-import { Wallet, Film, Loader2, TrendingUp, Sparkles, Play } from 'lucide-react';
+import { Wallet, Loader2, TrendingUp, Sparkles, Play } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { USDC_ABI, CONTRACT_ADDRESSES } from '@/config/contracts';
 import { USDC_ADDRESSES } from '@/config/web3';
@@ -163,61 +163,58 @@ export function PurchaseDialog({
       }
       onOpenChange(open);
     }}>
-      <DialogContent className="sm:max-w-[500px] bg-card border-border max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-[480px] bg-card border-border max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 text-2xl">
-            <Film className="h-6 w-6 text-primary" />
-            {filmTitle}
-          </DialogTitle>
-          <DialogDescription className="text-muted-foreground">
-            Own, watch, or invest in this film
+          <DialogTitle className="text-xl">{filmTitle}</DialogTitle>
+          <DialogDescription>
+            Pick how you want to watch
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-6 py-4">
+        <div className="space-y-4 py-4">
           {/* Purchase Type Selection */}
-          <div className="space-y-3">
-            <Label className="text-foreground font-semibold">Choose Your Option</Label>
+          <div className="space-y-2">
             <RadioGroup value={purchaseType} onValueChange={(v) => setPurchaseType(v as 'nft' | 'direct' | 'investment')}>
-              <div className="flex items-center space-x-2 p-4 rounded-lg border border-border hover:bg-secondary/50 cursor-pointer">
-                <RadioGroupItem value="nft" id="nft" />
-                <Label htmlFor="nft" className="flex-1 cursor-pointer">
-                  <div className="flex items-center gap-3">
-                    <Sparkles className="h-5 w-5 text-primary" />
-                    <div>
-                      <p className="font-semibold text-foreground">NFT Ticket (${nftPrice})</p>
-                      <p className="text-sm text-muted-foreground">Own as NFT, resell anytime, earn royalties</p>
+              <div className="flex items-center space-x-2 p-3 rounded-lg border border-border hover:bg-secondary/50 cursor-pointer">
+                <RadioGroupItem value="direct" id="direct" />
+                <Label htmlFor="direct" className="flex-1 cursor-pointer">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Play className="h-4 w-4 text-muted-foreground" />
+                      <span className="font-medium">Watch now</span>
                     </div>
+                    <span className="text-primary font-semibold">${directPrice}</span>
                   </div>
+                  <p className="text-xs text-muted-foreground mt-1">Stream anytime</p>
                 </Label>
               </div>
               
-              <div className="flex items-center space-x-2 p-4 rounded-lg border border-border hover:bg-secondary/50 cursor-pointer">
-                <RadioGroupItem value="direct" id="direct" />
-                <Label htmlFor="direct" className="flex-1 cursor-pointer">
-                  <div className="flex items-center gap-3">
-                    <Play className="h-5 w-5 text-primary" />
-                    <div>
-                      <p className="font-semibold text-foreground">Direct Access (${directPrice})</p>
-                      <p className="text-sm text-muted-foreground">Stream-only access, lowest price</p>
+              <div className="flex items-center space-x-2 p-3 rounded-lg border border-border hover:bg-secondary/50 cursor-pointer">
+                <RadioGroupItem value="nft" id="nft" />
+                <Label htmlFor="nft" className="flex-1 cursor-pointer">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Sparkles className="h-4 w-4 text-muted-foreground" />
+                      <span className="font-medium">Own it (NFT)</span>
                     </div>
+                    <span className="text-primary font-semibold">${nftPrice}</span>
                   </div>
+                  <p className="text-xs text-muted-foreground mt-1">Resell or collect</p>
                 </Label>
               </div>
 
               {investmentAvailable && (
-                <div className="flex items-center space-x-2 p-4 rounded-lg border border-primary/50 bg-primary/5 hover:bg-primary/10 cursor-pointer">
+                <div className="flex items-center space-x-2 p-3 rounded-lg border border-primary/30 bg-primary/5 hover:bg-primary/10 cursor-pointer">
                   <RadioGroupItem value="investment" id="investment" />
                   <Label htmlFor="investment" className="flex-1 cursor-pointer">
-                    <div className="flex items-center gap-3">
-                      <TrendingUp className="h-5 w-5 text-primary" />
-                      <div>
-                        <p className="font-semibold text-foreground">Invest (${investmentPricePerShare}/share)</p>
-                        <p className="text-sm text-muted-foreground">
-                          Earn 20% of film revenue • {availableShares} shares left
-                        </p>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <TrendingUp className="h-4 w-4 text-primary" />
+                        <span className="font-medium">Back this film</span>
                       </div>
+                      <span className="text-primary font-semibold">${investmentPricePerShare}/share</span>
                     </div>
+                    <p className="text-xs text-muted-foreground mt-1">{availableShares} shares left • earn when it sells</p>
                   </Label>
                 </div>
               )}
@@ -227,7 +224,7 @@ export function PurchaseDialog({
           {/* Shares Input for Investment */}
           {purchaseType === 'investment' && (
             <div className="space-y-2">
-              <Label className="text-foreground">Number of Shares</Label>
+              <Label className="text-sm">How many shares?</Label>
               <Input
                 type="number"
                 min={1}
@@ -236,88 +233,62 @@ export function PurchaseDialog({
                 onChange={(e) => setShares(Math.min(parseInt(e.target.value) || 1, availableShares))}
                 className="bg-secondary border-border"
               />
-              <p className="text-xs text-muted-foreground">
-                Max {availableShares} shares • Each share = {(1 / 100 * 20).toFixed(2)}% of investor pool
-              </p>
             </div>
           )}
 
           {/* Network Selection */}
-          <div className="space-y-3">
-            <Label className="text-foreground font-semibold">Payment Network</Label>
+          <div className="space-y-2">
+            <Label className="text-sm">Pay with USDC on</Label>
             <RadioGroup value={network} onValueChange={(v) => setNetwork(v as 'base' | 'lisk' | 'scroll' | 'celo')}>
-              <div className="grid grid-cols-4 gap-2">
-                <div className="flex items-center space-x-2 p-3 rounded-lg border border-border hover:bg-secondary/50 cursor-pointer">
-                  <RadioGroupItem value="base" id="base" />
-                  <Label htmlFor="base" className="cursor-pointer text-sm">
-                    <span className="font-medium text-foreground">Base</span>
-                  </Label>
-                </div>
-                <div className="flex items-center space-x-2 p-3 rounded-lg border border-border hover:bg-secondary/50 cursor-pointer">
-                  <RadioGroupItem value="lisk" id="lisk" />
-                  <Label htmlFor="lisk" className="cursor-pointer text-sm">
-                    <span className="font-medium text-foreground">Lisk</span>
-                  </Label>
-                </div>
-                <div className="flex items-center space-x-2 p-3 rounded-lg border border-border hover:bg-secondary/50 cursor-pointer">
-                  <RadioGroupItem value="scroll" id="scroll" />
-                  <Label htmlFor="scroll" className="cursor-pointer text-sm">
-                    <span className="font-medium text-foreground">Scroll</span>
-                  </Label>
-                </div>
-                <div className="flex items-center space-x-2 p-3 rounded-lg border border-border hover:bg-secondary/50 cursor-pointer">
-                  <RadioGroupItem value="celo" id="celo" />
-                  <Label htmlFor="celo" className="cursor-pointer text-sm">
-                    <span className="font-medium text-foreground">Celo</span>
-                  </Label>
-                </div>
+              <div className="flex gap-2">
+                {['base', 'lisk', 'scroll', 'celo'].map((n) => (
+                  <div key={n} className="flex-1">
+                    <RadioGroupItem value={n} id={n} className="peer sr-only" />
+                    <Label
+                      htmlFor={n}
+                      className="flex items-center justify-center rounded-lg border border-border p-2 cursor-pointer hover:bg-secondary/50 peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/10 text-sm capitalize"
+                    >
+                      {n}
+                    </Label>
+                  </div>
+                ))}
               </div>
             </RadioGroup>
           </div>
 
-          {/* Price Display */}
-          <div className="p-4 rounded-lg bg-secondary/20 border border-primary/20">
-            <div className="flex justify-between items-center">
-              <span className="text-muted-foreground">Total Price</span>
-              <div className="text-right">
-                <span className="text-2xl font-bold text-primary">{getPrice()} USDC</span>
-                <p className="text-xs text-muted-foreground">≈ ${getPrice()} USD</p>
-              </div>
-            </div>
-            {purchaseType === 'investment' && (
-              <p className="text-xs text-primary mt-2">
-                💰 Potential earnings: Earn your share of 20% of all film revenue
-              </p>
-            )}
+          {/* Total */}
+          <div className="flex justify-between items-center py-3 border-t border-border">
+            <span className="text-muted-foreground">Total</span>
+            <span className="text-xl font-bold text-primary">{getPrice()} USDC</span>
           </div>
 
           {/* Purchase Button */}
           <Button
             onClick={handleApprove}
             disabled={!isConnected || isPending || isConfirming}
-            className="w-full h-12 text-lg"
+            className="w-full"
             size="lg"
           >
             {isPending || isConfirming ? (
               <>
-                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                {step === 'approve' ? 'Approving USDC...' : 'Processing...'}
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                {step === 'approve' ? 'Approving...' : 'Processing...'}
               </>
             ) : (
               <>
-                <Wallet className="mr-2 h-5 w-5" />
+                <Wallet className="mr-2 h-4 w-4" />
                 {isConnected 
                   ? purchaseType === 'investment' 
-                    ? `Invest ${getPrice()} USDC` 
+                    ? `Back with ${getPrice()} USDC` 
                     : `Pay ${getPrice()} USDC`
-                  : 'Connect Wallet First'}
+                  : 'Connect wallet to pay'}
               </>
             )}
           </Button>
 
           {!isConnected && (
-            <p className="text-sm text-center text-muted-foreground">
-              Please connect your wallet to proceed
+            <p className="text-xs text-center text-muted-foreground">
+              Connect your wallet first
             </p>
           )}
         </div>
