@@ -27,8 +27,8 @@ const Submit = () => {
     nftPrimaryPrice: "15",
     investmentPricePerShare: "2",
     totalShares: "100",
-    creatorRevenueShare: "70",
-    investorRevenueShare: "20",
+    creatorRevenueShare: "90",
+    investorRevenueShare: "0",
   });
 
   useEffect(() => {

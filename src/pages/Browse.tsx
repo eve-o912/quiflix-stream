@@ -201,12 +201,12 @@ const Browse = () => {
               <div className="text-sm text-muted-foreground">Open for Investment</div>
             </div>
             <div className="text-center">
-              <div className="mb-2 text-4xl font-bold text-primary">70%</div>
+              <div className="mb-2 text-4xl font-bold text-primary">90%</div>
               <div className="text-sm text-muted-foreground">Creator Revenue Share</div>
             </div>
             <div className="text-center">
-              <div className="mb-2 text-4xl font-bold text-primary">20%</div>
-              <div className="text-sm text-muted-foreground">Investor Revenue Share</div>
+              <div className="mb-2 text-4xl font-bold text-primary">10%</div>
+              <div className="text-sm text-muted-foreground">Secondary NFT Royalty</div>
             </div>
           </div>
         </section>

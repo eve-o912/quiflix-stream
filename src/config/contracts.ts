@@ -97,4 +97,8 @@ export const CONTRACT_ADDRESSES = {
     nft: '0x0000000000000000000000000000000000000000', // Replace with deployed address
     content: '0x0000000000000000000000000000000000000000', // Replace with deployed address
   },
+  celo: {
+    nft: '0x0000000000000000000000000000000000000000', // Replace with deployed address
+    content: '0x0000000000000000000000000000000000000000', // Replace with deployed address
+  },
 } as const;
