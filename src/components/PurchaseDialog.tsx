@@ -34,7 +34,7 @@ export function PurchaseDialog({
   availableShares = 0
 }: PurchaseDialogProps) {
   const [purchaseType, setPurchaseType] = useState<'nft' | 'direct' | 'investment'>('nft');
-  const [network, setNetwork] = useState<'base' | 'lisk' | 'scroll'>('base');
+  const [network, setNetwork] = useState<'base' | 'lisk' | 'scroll' | 'celo'>('base');
   const [shares, setShares] = useState(1);
   const [step, setStep] = useState<'select' | 'approve' | 'purchase'>('select');
   const { address, isConnected } = useAccount();
@@ -245,8 +245,8 @@ export function PurchaseDialog({
           {/* Network Selection */}
           <div className="space-y-3">
             <Label className="text-foreground font-semibold">Payment Network</Label>
-            <RadioGroup value={network} onValueChange={(v) => setNetwork(v as 'base' | 'lisk' | 'scroll')}>
-              <div className="grid grid-cols-3 gap-2">
+            <RadioGroup value={network} onValueChange={(v) => setNetwork(v as 'base' | 'lisk' | 'scroll' | 'celo')}>
+              <div className="grid grid-cols-4 gap-2">
                 <div className="flex items-center space-x-2 p-3 rounded-lg border border-border hover:bg-secondary/50 cursor-pointer">
                   <RadioGroupItem value="base" id="base" />
                   <Label htmlFor="base" className="cursor-pointer text-sm">
@@ -263,6 +263,12 @@ export function PurchaseDialog({
                   <RadioGroupItem value="scroll" id="scroll" />
                   <Label htmlFor="scroll" className="cursor-pointer text-sm">
                     <span className="font-medium text-foreground">Scroll</span>
+                  </Label>
+                </div>
+                <div className="flex items-center space-x-2 p-3 rounded-lg border border-border hover:bg-secondary/50 cursor-pointer">
+                  <RadioGroupItem value="celo" id="celo" />
+                  <Label htmlFor="celo" className="cursor-pointer text-sm">
+                    <span className="font-medium text-foreground">Celo</span>
                   </Label>
                 </div>
               </div>

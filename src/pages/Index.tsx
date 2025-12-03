@@ -79,9 +79,9 @@ const Index = () => {
                 <div className="mb-6 inline-flex rounded-xl bg-green-500/10 p-4">
                   <DollarSign className="h-8 w-8 text-green-400" />
                 </div>
-                <h4 className="mb-3 text-xl font-semibold text-foreground">70% Revenue Share</h4>
+                <h4 className="mb-3 text-xl font-semibold text-foreground">90% Revenue Share</h4>
                 <p className="text-muted-foreground">
-                  Keep the majority of what you earn. Every purchase, every resale – you get paid directly.
+                  Keep 90% of every sale. Plus 10% royalties on secondary NFT resales – forever.
                 </p>
               </div>
 
@@ -164,18 +164,18 @@ const Index = () => {
 
                 <div className="rounded-2xl border border-border bg-card p-6 text-center">
                   <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-green-500/20 text-xl font-bold text-green-400">
-                    70%
+                    90%
                   </div>
                   <h4 className="mb-2 font-semibold text-foreground">Creator Earns</h4>
-                  <p className="text-sm text-muted-foreground">Instant USDC to your wallet</p>
+                  <p className="text-sm text-muted-foreground">Direct & primary NFT sales + 10% secondary</p>
                 </div>
 
                 <div className="rounded-2xl border border-border bg-card p-6 text-center">
                   <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-blue-500/20 text-xl font-bold text-blue-400">
-                    20%
+                    10%
                   </div>
-                  <h4 className="mb-2 font-semibold text-foreground">Investors Share</h4>
-                  <p className="text-sm text-muted-foreground">Proportional to shares owned</p>
+                  <h4 className="mb-2 font-semibold text-foreground">Secondary Royalty</h4>
+                  <p className="text-sm text-muted-foreground">Creator earns on every NFT resale</p>
                 </div>
 
                 <div className="rounded-2xl border border-border bg-card p-6 text-center">
@@ -252,7 +252,7 @@ const Index = () => {
             </div>
           </div>
           <div className="mt-12 pt-8 border-t border-border text-center text-sm text-muted-foreground">
-            <p>© 2024 QuiFlix. Powered by Base, Lisk & Scroll networks.</p>
+            <p>© 2024 QuiFlix. Powered by Base, Lisk, Scroll & Celo networks.</p>
           </div>
         </div>
       </footer>
