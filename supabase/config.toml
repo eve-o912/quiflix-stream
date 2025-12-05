@@ -5,3 +5,6 @@ verify_jwt = true
 
 [functions.sign-transaction]
 verify_jwt = true
+
+[functions.get-wallet-balance]
+verify_jwt = false
