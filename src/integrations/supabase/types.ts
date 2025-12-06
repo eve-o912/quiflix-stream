@@ -277,10 +277,41 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      safe_wallet_view: {
+        Row: {
+          created_at: string | null
+          id: string | null
+          network: string | null
+          user_id: string | null
+          wallet_address: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string | null
+          network?: string | null
+          user_id?: string | null
+          wallet_address?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string | null
+          network?: string | null
+          user_id?: string | null
+          wallet_address?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
-      [_ in never]: never
+      get_user_wallet_info: {
+        Args: { p_network?: string; p_user_id: string }
+        Returns: {
+          created_at: string
+          id: string
+          network: string
+          wallet_address: string
+        }[]
+      }
     }
     Enums: {
       film_status: "draft" | "pending" | "approved" | "rejected"

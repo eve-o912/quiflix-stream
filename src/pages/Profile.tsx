@@ -45,12 +45,13 @@ const Profile = () => {
     queryKey: ['wallet', userId],
     queryFn: async () => {
       if (!userId) return null;
+      // Use safe_wallet_view which excludes encrypted_private_key
       const { data, error } = await supabase
-        .from('custodial_wallets')
+        .from('safe_wallet_view')
         .select('*')
         .eq('user_id', userId)
         .single();
-      if (error) throw error;
+      if (error && error.code !== 'PGRST116') throw error;
       return data;
     },
     enabled: !!userId,
