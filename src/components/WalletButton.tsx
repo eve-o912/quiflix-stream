@@ -17,8 +17,9 @@ export function WalletButton() {
     const checkCustodialWallet = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
+        // Use safe_wallet_view which excludes encrypted_private_key
         const { data } = await supabase
-          .from('custodial_wallets')
+          .from('safe_wallet_view')
           .select('wallet_address')
           .eq('user_id', user.id)
           .eq('network', 'base')
@@ -73,8 +74,9 @@ export function WalletButton() {
           const checkWallet = async () => {
             const { data: { user } } = await supabase.auth.getUser();
             if (user) {
+              // Use safe_wallet_view which excludes encrypted_private_key
               const { data } = await supabase
-                .from('custodial_wallets')
+                .from('safe_wallet_view')
                 .select('wallet_address')
                 .eq('user_id', user.id)
                 .eq('network', 'base')
