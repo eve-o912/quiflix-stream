@@ -11,6 +11,7 @@ import { toast } from '@/hooks/use-toast';
 import { USDC_ABI, CONTRACT_ADDRESSES } from '@/config/contracts';
 import { USDC_ADDRESSES } from '@/config/web3';
 import { supabase } from '@/integrations/supabase/client';
+import { WalletSelection } from './WalletSelection';
 
 interface PurchaseDialogProps {
   open: boolean;
@@ -37,6 +38,7 @@ export function PurchaseDialog({
   const [network, setNetwork] = useState<'base' | 'lisk' | 'scroll' | 'celo'>('base');
   const [shares, setShares] = useState(1);
   const [step, setStep] = useState<'select' | 'approve' | 'purchase'>('select');
+  const [showWalletDialog, setShowWalletDialog] = useState(false);
   const { address, isConnected } = useAccount();
   const { writeContract, data: hash, isPending, reset } = useWriteContract();
   const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({ hash });
@@ -264,8 +266,8 @@ export function PurchaseDialog({
 
           {/* Purchase Button */}
           <Button
-            onClick={handleApprove}
-            disabled={!isConnected || isPending || isConfirming}
+            onClick={isConnected ? handleApprove : () => setShowWalletDialog(true)}
+            disabled={isPending || isConfirming}
             className="w-full"
             size="lg"
           >
@@ -288,10 +290,15 @@ export function PurchaseDialog({
 
           {!isConnected && (
             <p className="text-xs text-center text-muted-foreground">
-              Connect your wallet first
+              Click above to connect your wallet
             </p>
           )}
         </div>
+
+        <WalletSelection 
+          open={showWalletDialog} 
+          onOpenChange={setShowWalletDialog}
+        />
       </DialogContent>
     </Dialog>
   );
