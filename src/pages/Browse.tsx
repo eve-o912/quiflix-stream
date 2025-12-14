@@ -157,16 +157,16 @@ const Browse = () => {
         </div>
 
         {/* Films Grid */}
-        <div className="px-8 py-8">
+        <div className="px-6 py-6">
           <div className="mx-auto max-w-7xl">
-            <h2 className="mb-6 text-2xl font-bold text-foreground">All Films</h2>
+            <h2 className="mb-4 text-lg font-medium text-muted-foreground/80">All Films</h2>
             
             {isLoading ? (
               <div className="flex items-center justify-center py-12">
-                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                <Loader2 className="h-6 w-6 animate-spin text-diamond" />
               </div>
             ) : (
-              <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              <div className="grid gap-4 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
                 {films.map((film) => (
                   <FilmCard
                     key={film.id}
@@ -188,25 +188,25 @@ const Browse = () => {
         </div>
 
         {/* Stats Section */}
-        <section className="border-t border-border bg-gradient-to-r from-card/50 via-card to-card/50 px-8 py-12">
-          <div className="mx-auto grid max-w-7xl gap-8 md:grid-cols-4">
+        <section className="border-t border-diamond/10 bg-gradient-to-r from-card/30 via-card/50 to-card/30 px-6 py-8">
+          <div className="mx-auto grid max-w-7xl gap-6 grid-cols-2 md:grid-cols-4">
             <div className="text-center">
-              <div className="mb-2 text-4xl font-bold text-primary">{films.length}+</div>
-              <div className="text-sm text-muted-foreground">Films Available</div>
+              <div className="mb-1 text-2xl font-medium text-diamond/80">{films.length}+</div>
+              <div className="text-xs text-muted-foreground/60">Films</div>
             </div>
             <div className="text-center">
-              <div className="mb-2 text-4xl font-bold text-primary">
+              <div className="mb-1 text-2xl font-medium text-diamond/80">
                 {films.filter(f => f.available_shares > 0).length}
               </div>
-              <div className="text-sm text-muted-foreground">Open for Investment</div>
+              <div className="text-xs text-muted-foreground/60">Investments</div>
             </div>
             <div className="text-center">
-              <div className="mb-2 text-4xl font-bold text-primary">90%</div>
-              <div className="text-sm text-muted-foreground">Creator Revenue Share</div>
+              <div className="mb-1 text-2xl font-medium text-diamond/80">90%</div>
+              <div className="text-xs text-muted-foreground/60">Creator Share</div>
             </div>
             <div className="text-center">
-              <div className="mb-2 text-4xl font-bold text-primary">10%</div>
-              <div className="text-sm text-muted-foreground">Secondary NFT Royalty</div>
+              <div className="mb-1 text-2xl font-medium text-diamond/80">10%</div>
+              <div className="text-xs text-muted-foreground/60">NFT Royalty</div>
             </div>
           </div>
         </section>
