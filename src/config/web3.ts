@@ -1,6 +1,6 @@
 import { createConfig, http } from 'wagmi';
 import { base, mainnet, scroll } from 'wagmi/chains';
-import { coinbaseWallet, metaMask } from 'wagmi/connectors';
+import { injected, coinbaseWallet } from 'wagmi/connectors';
 
 // Lisk Network Configuration
 export const lisk = {
@@ -51,15 +51,11 @@ export const USDC_ADDRESSES = {
 export const config = createConfig({
   chains: [base, lisk, scroll, celo, mainnet],
   connectors: [
-    metaMask({
-      dappMetadata: {
-        name: 'QuiFlix',
-        url: 'https://quiflix.app',
-      },
+    injected({
+      target: 'metaMask',
     }),
     coinbaseWallet({
       appName: 'QuiFlix',
-      appLogoUrl: 'https://quiflix.app/logo.png',
     }),
   ],
   transports: {

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAccount, useDisconnect } from 'wagmi';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from './ui/button';
@@ -12,8 +12,8 @@ export function WalletButton() {
   const { address, isConnected } = useAccount();
   const { disconnect } = useDisconnect();
 
-  // Check for custodial wallet on component mount
-  useState(() => {
+  // Check for custodial wallet on component mount and auth changes
+  useEffect(() => {
     const checkCustodialWallet = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
@@ -27,11 +27,23 @@ export function WalletButton() {
         
         if (data) {
           setCustodialAddress(data.wallet_address);
+        } else {
+          setCustodialAddress(null);
         }
+      } else {
+        setCustodialAddress(null);
       }
     };
+    
     checkCustodialWallet();
-  });
+    
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(() => {
+      checkCustodialWallet();
+    });
+    
+    return () => subscription.unsubscribe();
+  }, []);
 
   const handleDisconnect = () => {
     if (isConnected) {

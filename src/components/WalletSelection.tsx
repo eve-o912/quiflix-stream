@@ -57,14 +57,16 @@ export function WalletSelection({ open, onOpenChange, onWalletConnected }: Walle
   const handleExternalWallet = async (type: 'metamask' | 'coinbase') => {
     setLoading(type);
     
+    // Find connector by type - use 'injected' for MetaMask and 'coinbaseWalletSDK' for Coinbase
     const connector = type === 'metamask' 
-      ? connectors.find(c => c.id === 'metaMask')
-      : connectors.find(c => c.id === 'coinbaseWalletSDK');
+      ? connectors.find(c => c.id === 'injected' || c.id === 'metaMask' || c.name?.toLowerCase().includes('metamask'))
+      : connectors.find(c => c.id === 'coinbaseWalletSDK' || c.name?.toLowerCase().includes('coinbase'));
 
     if (!connector) {
+      const walletName = type === 'metamask' ? 'MetaMask' : 'Coinbase Wallet';
       toast({
-        title: `${type === 'metamask' ? 'MetaMask' : 'Coinbase Wallet'} not found`,
-        description: `Install the extension to continue`,
+        title: `${walletName} not found`,
+        description: `Please install ${walletName} extension to continue`,
         variant: 'destructive',
       });
       setLoading(null);
@@ -72,7 +74,7 @@ export function WalletSelection({ open, onOpenChange, onWalletConnected }: Walle
     }
 
     try {
-      connect({ connector }, {
+      await connect({ connector }, {
         onSuccess: () => {
           toast({
             title: 'Connected!',
@@ -80,22 +82,23 @@ export function WalletSelection({ open, onOpenChange, onWalletConnected }: Walle
           });
           onWalletConnected?.();
           onOpenChange(false);
+          setLoading(null);
         },
         onError: (error) => {
           toast({
             title: 'Connection failed',
-            description: error.message,
+            description: error.message || 'Could not connect wallet',
             variant: 'destructive',
           });
+          setLoading(null);
         }
       });
     } catch (error: any) {
       toast({
         title: 'Connection failed',
-        description: error.message,
+        description: error.message || 'Could not connect wallet',
         variant: 'destructive',
       });
-    } finally {
       setLoading(null);
     }
   };
