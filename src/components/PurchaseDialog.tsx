@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAccount, useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
 import { parseUnits } from 'viem';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from './ui/dialog';
@@ -24,6 +24,13 @@ interface PurchaseDialogProps {
   availableShares?: number;
 }
 
+interface WalletBalance {
+  usdc: string;
+  usdt: string;
+  native: string;
+  kes: string;
+}
+
 export function PurchaseDialog({ 
   open, 
   onOpenChange, 
@@ -39,9 +46,38 @@ export function PurchaseDialog({
   const [shares, setShares] = useState(1);
   const [step, setStep] = useState<'select' | 'approve' | 'purchase'>('select');
   const [showWalletDialog, setShowWalletDialog] = useState(false);
+  const [balance, setBalance] = useState<WalletBalance | null>(null);
+  const [loadingBalance, setLoadingBalance] = useState(false);
   const { address, isConnected } = useAccount();
   const { writeContract, data: hash, isPending, reset } = useWriteContract();
   const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({ hash });
+
+  // Fetch wallet balance when connected and network changes
+  useEffect(() => {
+    const fetchBalance = async () => {
+      if (!isConnected || !address) {
+        setBalance(null);
+        return;
+      }
+
+      setLoadingBalance(true);
+      try {
+        const response = await supabase.functions.invoke('get-wallet-balance', {
+          body: { walletAddress: address, network }
+        });
+
+        if (response.data) {
+          setBalance(response.data);
+        }
+      } catch (error) {
+        console.error('Failed to fetch balance:', error);
+      } finally {
+        setLoadingBalance(false);
+      }
+    };
+
+    fetchBalance();
+  }, [isConnected, address, network]);
 
   const investmentAvailable = availableShares > 0 && investmentPricePerShare > 0;
   
@@ -257,6 +293,27 @@ export function PurchaseDialog({
               </div>
             </RadioGroup>
           </div>
+
+          {/* Wallet Balance */}
+          {isConnected && (
+            <div className="p-3 rounded-lg bg-secondary/50 border border-border">
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-muted-foreground">Your balance</span>
+                {loadingBalance ? (
+                  <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                ) : (
+                  <span className="font-medium">
+                    {balance ? `${balance.usdc} USDC` : '0.00 USDC'}
+                  </span>
+                )}
+              </div>
+              {balance && parseFloat(balance.usdc) < parseFloat(getPrice()) && (
+                <p className="text-xs text-destructive mt-1">
+                  Insufficient balance for this purchase
+                </p>
+              )}
+            </div>
+          )}
 
           {/* Total */}
           <div className="flex justify-between items-center py-3 border-t border-border">
