@@ -41,7 +41,7 @@ export const FilmCard = ({
   
   return (
     <Card className="group overflow-hidden border-diamond/20 bg-card/60 backdrop-blur-sm transition-all hover:shadow-diamond hover:border-diamond/40">
-      <div className="relative aspect-[3/4] overflow-hidden">
+      <div className="relative aspect-[4/5] overflow-hidden">
         <img
           src={image || "https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=800&h=450&fit=crop"}
           alt={title}
