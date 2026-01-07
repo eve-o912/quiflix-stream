@@ -1,4 +1,4 @@
-import { Film, Grid3x3, Gift, Upload, User } from "lucide-react";
+import { Film, Grid3x3, Gift, Upload, User, Share2 } from "lucide-react";
 import { NavLink } from "./NavLink";
 import { cn } from "@/lib/utils";
 
@@ -6,6 +6,7 @@ export const Sidebar = () => {
   const navItems = [
     { icon: Grid3x3, label: "Browse", path: "/browse" },
     { icon: Film, label: "My Films", path: "/my-films" },
+    { icon: Share2, label: "Distribute", path: "/distribute" },
     { icon: Gift, label: "Rewards", path: "/rewards" },
     { icon: Upload, label: "Submit", path: "/submit" },
     { icon: User, label: "Profile", path: "/profile" },

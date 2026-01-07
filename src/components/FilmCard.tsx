@@ -1,10 +1,12 @@
 import { useState } from "react";
-import { Star, Wallet, Play, TrendingUp } from "lucide-react";
+import { Star, Wallet, Play, TrendingUp, Share2 } from "lucide-react";
 import { Button } from "./ui/button";
 import { Card, CardContent } from "./ui/card";
 import { PurchaseDialog } from "./PurchaseDialog";
 import { TrailerModal } from "./TrailerModal";
+import { DistributorApplicationForm } from "./DistributorApplicationForm";
 import { Badge } from "./ui/badge";
+import { Film } from "@/hooks/useFilms";
 
 interface FilmCardProps {
   id: string;
@@ -35,6 +37,7 @@ export const FilmCard = ({
 }: FilmCardProps) => {
   const [showPurchaseDialog, setShowPurchaseDialog] = useState(false);
   const [showTrailer, setShowTrailer] = useState(false);
+  const [showDistributorForm, setShowDistributorForm] = useState(false);
   
   const investmentAvailable = availableShares > 0 && investmentPricePerShare > 0;
   const investmentPercentage = totalShares > 0 ? ((totalShares - availableShares) / totalShares) * 100 : 0;
@@ -90,7 +93,7 @@ export const FilmCard = ({
           <span className="text-diamond text-xs font-medium">${Math.min(directPrice, nftPrice).toFixed(2)}</span>
         </div>
 
-        <div className="flex gap-1.5">
+        <div className="flex gap-1.5 mb-1.5">
           <Button 
             variant="ghost"
             size="sm"
@@ -110,6 +113,16 @@ export const FilmCard = ({
           </Button>
         </div>
         
+        <Button 
+          variant="outline"
+          size="sm"
+          className="w-full h-7 text-[10px] border-primary/30 text-primary hover:bg-primary/10"
+          onClick={() => setShowDistributorForm(true)}
+        >
+          <Share2 className="mr-1 h-3 w-3" />
+          Apply to Distribute
+        </Button>
+        
         <TrailerModal
           open={showTrailer}
           onOpenChange={setShowTrailer}
@@ -126,6 +139,17 @@ export const FilmCard = ({
           nftPrice={nftPrice}
           investmentPricePerShare={investmentPricePerShare}
           availableShares={availableShares}
+        />
+        
+        <DistributorApplicationForm
+          film={{
+            id,
+            title,
+            poster_url: image,
+            direct_price: directPrice,
+          } as Film}
+          open={showDistributorForm}
+          onOpenChange={setShowDistributorForm}
         />
       </CardContent>
     </Card>

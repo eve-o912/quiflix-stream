@@ -16,6 +16,7 @@ import Terms from "./pages/Terms";
 import Privacy from "./pages/Privacy";
 import Help from "./pages/Help";
 import NotFound from "./pages/NotFound";
+import Distribute from "./pages/Distribute";
 
 const queryClient = new QueryClient();
 
@@ -40,6 +41,7 @@ const App = () => (
             <Route path="/help" element={<Help />} />
             <Route path="/refund" element={<Terms />} />
             <Route path="/contact" element={<Help />} />
+            <Route path="/distribute" element={<Distribute />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
